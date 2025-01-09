@@ -26,9 +26,21 @@ class StoreController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function login(Request $request)
     {
-        //
+        $user = Store::where("email",$request->input("email"))->first();
+
+        if(!$user){
+            return response()->json(["message" => "user not found"]);
+        }
+
+        if(!$user->password === $request->input("password")){
+            return response()->json(["message" => "wrong password"],401);
+        }
+
+        $token = $user -> createToken("auth_token");
+
+        return response()->json(["token" => $token->plainTextToken]);
     }
 
     /**
