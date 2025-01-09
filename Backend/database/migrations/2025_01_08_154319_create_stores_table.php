@@ -13,6 +13,15 @@ return new class extends Migration
     {
         Schema::create('stores', function (Blueprint $table) {
             $table->id();
+            $table->string('FullName');
+            $table->string('StoreName')->unique();
+            $table->string('StroyCategory');
+            $table->string('Email')->unique();
+            $table->string('Password');
+            $table->string('Phone')->unique();
+            $table->string('Address')->unique();
+            $table->string('Photo')->nullable();
+            $table->string('role')->default('owner');
             $table->timestamps();
         });
     }
