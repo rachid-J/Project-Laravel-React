@@ -10,10 +10,6 @@ use Laravel\Sanctum\HasApiTokens;
 
 class Store extends Model
 {
-<<<<<<< HEAD
-    use HasFactory, Notifiable;
-
-=======
     protected $fillable = [
         'name',
         'store_name',
@@ -29,5 +25,4 @@ class Store extends Model
     protected $hidden = [
         'password',
     ];
->>>>>>> e554b43782ab4347de8307b5c9711fb546c01d74
 }
