@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('address')->unique();
             $table->string('phone')->unique();
             // $table->string('photo')->nullable();
-            $table->string('role')->default('Owner');
+            $table->string('role')->default('owner');
             $table->timestamps();
         });
     }
