@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Store;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreRequest;
+use Illuminate\Support\Facades\Hash;
 
 class StoreController extends Controller
 {
@@ -19,11 +20,32 @@ class StoreController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create(StoreRequest $request)
-    {
-        $validationRequest = $request->validated();
-        Store::create($validationRequest); 
+    public function createStore(StoreRequest $request)
+    { 
+        
+        $validatedData = $request->validated();
+        
+        
+        // Create the store
+        $store = Store::create([
+            ...$validatedData,
+            'password' => Hash::make($validatedData['password']), // Encrypt password
+        ]);
+    
+        // Authenticate the store and generate JWT token
+        $token = auth('store')->attempt($request->only('email', 'password'));
+    
+        if (!$token) {
+            return response(["message" => "Unauthorized"], 401);
+        }
+    
+        return response([
+            "message" => "Store created successfully",
+            "store" => $store,
+            "token" => $token,
+        ], 201);
     }
+    
 
     /**
      * Store a newly created resource in storage.

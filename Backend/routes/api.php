@@ -8,5 +8,5 @@ use App\Http\Controllers\StoreController;
 // });
 
 Route::prefix("store")->group(function ($route) {
-    Route::post("/create",[StoreController::class,"create"]);
+    Route::post("/create",[StoreController::class,"createStore"]);
 });

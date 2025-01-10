@@ -23,14 +23,14 @@ class StoreRequest extends FormRequest
     {
         return [
             'name' => "required|string|min:3",
-            'store_name' => 'required|string|max:255|unique:stores,StoreName',
+            'store_name' => 'required|string|max:255|unique:stores,store_name',
             'store_category' => 'required|string|max:255',
             'email' => "required|email|unique:stores,email",
-            'password' => 'required|string|min:8',
-            'phone' => 'required|max:15|unique:stores,phone',
-            'photo' => 'required|image|max:2048',
+            'password' => 'required|string|min:8|confirmed',
             'address' => 'required|string|max:255|unique:stores,address',
-            'role' => 'nullable|string|in:user'
+            'phone' => 'required|regex:/^[0-9]{10,15}$/|unique:stores,phone',
+            // 'photo' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+            'role' => 'nullable|string'
         ];
     }
 }

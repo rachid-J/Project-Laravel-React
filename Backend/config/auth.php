@@ -40,6 +40,14 @@ return [
             'driver' => 'jwt',
             'provider' => 'users',
         ],
+        // "api" => [
+        //     'driver' => 'jwt',
+        //     'provider' => 'stores',
+        // ],
+        'store' => [
+            'driver' => 'jwt',
+            'provider' => 'stores',
+        ],
     ],
 
     /*
@@ -69,6 +77,11 @@ return [
         //     'driver' => 'database',
         //     'table' => 'users',
         // ],
+        'stores' => [
+            'driver' => 'eloquent',
+            'model' => env('AUTH_MODEL', App\Models\Store::class),
+        ],
+        
     ],
 
     /*
@@ -93,6 +106,12 @@ return [
     'passwords' => [
         'users' => [
             'provider' => 'users',
+            'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
+            'expire' => 60,
+            'throttle' => 60,
+        ],
+        'stores' => [
+            'provider' => 'stores',
             'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
             'expire' => 60,
             'throttle' => 60,
