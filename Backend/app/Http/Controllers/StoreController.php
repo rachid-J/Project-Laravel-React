@@ -20,7 +20,7 @@ class StoreController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function createStore(StoreRequest $request)
+    public function create(StoreRequest $request)
     { 
         
         $validatedData = $request->validated();
