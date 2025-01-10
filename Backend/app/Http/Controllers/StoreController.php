@@ -52,21 +52,20 @@ class StoreController extends Controller
      */
     public function login(Request $request)
     {
-        $user = Store::where("email",$request->input("email"))->first();
+        $data = $request->only("email","password");
+        if(!$token = auth("store")->attempt($data)) {
+            return response([
+                "message" => "error unauthorized"
+            ],401);
+    };
+       $stock = auth("store")->user();
+       
+       return response([
+        "token" => $token,
+        "stock" => $stock
+       ]);
 
-        if(!$user){
-            return response()->json(["message" => "user not found"]);
-        }
-
-        if(!$user->password === $request->input("password")){
-            return response()->json(["message" => "wrong password"],401);
-        }
-
-        $token = $user -> createToken("auth_token");
-
-        return response()->json(["token" => $token->plainTextToken]);
     }
-
     /**
      * Display the specified resource.
      */
