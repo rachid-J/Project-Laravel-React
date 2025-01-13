@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 
 const Signup = () => {
@@ -38,7 +38,7 @@ const Signup = () => {
 
     try {
       const response = await axios.post('http://localhost:8000/api/store/create', formData);
-      console.log(response)
+     
       setSuccessMessage('Store created successfully');
       setFormData({
         name: '',
@@ -53,6 +53,7 @@ const Signup = () => {
       });
     } catch (err) {
       setError('An error occurred while creating the store');
+      console.log(err)
     }
   };
 
