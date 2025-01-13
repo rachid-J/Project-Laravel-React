@@ -25,7 +25,10 @@ class StoreController extends Controller
         
         $validatedData = $request->validated();
         
-        
+        if($request->hasFile("photo")){
+            $path = $request->file("photo")->store("profile","public");
+            $validatedData["photo"] = $path;
+        }
         // Create the store
         $store = Store::create([
             ...$validatedData,
