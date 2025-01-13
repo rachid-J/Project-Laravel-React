@@ -22,7 +22,7 @@ class Store extends Authenticatable implements JWTSubject
         'password',
         'address',
         'phone',
-        // 'photo',
+        'photo',
         'role'
     ];
 

@@ -26,10 +26,10 @@ class StoreRequest extends FormRequest
             'store_name' => 'required|string|max:255|unique:stores,store_name',
             'store_category' => 'required|string|max:255',
             'email' => "required|email|unique:stores,email",
-            'password' => 'required|string|min:8|confirmed',
+            'password' => 'required|string|confirmed|min:8',
             'address' => 'required|string|max:255|unique:stores,address',
             'phone' => 'required|regex:/^[0-9]{10,15}$/|unique:stores,phone',
-            // 'photo' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
             'role' => 'nullable|string'
         ];
     }
