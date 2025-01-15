@@ -6,6 +6,8 @@ use App\Models\Store;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreRequest;
 use Illuminate\Support\Facades\Hash;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class StoreController extends Controller
 {
@@ -72,10 +74,31 @@ class StoreController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Store $store)
+    public function logout(Request $request)
     {
-        //
-    }
+        try {
+            $token = JWTAuth::getToken();
+            if (!$token) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Token not provided'
+                ], 400);
+            }
+            
+
+            JWTAuth::invalidate($token);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Successfully logged out'
+            ], 200);
+        } catch (JWTException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to log out',
+                'details' => $e->getMessage(),
+            ],500);
+    }}
 
     /**
      * Show the form for editing the specified resource.

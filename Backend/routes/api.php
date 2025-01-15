@@ -10,5 +10,8 @@ use App\Http\Controllers\StoreController;
 Route::prefix("store")->group(function ($route) {
     Route::post("/create",[StoreController::class,"create"]);
     Route::post("/login",[StoreController::class,"login"]);
-
 });
+Route::middleware('auth:store')->prefix('store')->group(function(){
+    Route::post('/logout', [StoreController::class, 'logout']);
+});
+
