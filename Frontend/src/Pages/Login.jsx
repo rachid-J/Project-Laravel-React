@@ -13,8 +13,13 @@ export default function Login() {
     e.preventDefault();
     setError(null);
 
+    const payload = {
+      email : email ,
+      password : password
+    }
+
     try {
-      const response = await axiosClient.post("store/login", { email, password });
+      const response = await axiosClient.post("store/login", payload);
       const { token } = response.data;
 
       // Save the token in localStorage
