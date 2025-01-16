@@ -18,7 +18,7 @@ const route = createBrowserRouter([
                 element:<Home/>
             },
             {
-                path:"/notfound",
+                path:"*",
                 element:<NotFound/>
             },
             {
@@ -40,7 +40,7 @@ const route = createBrowserRouter([
                 element:<Home/>
             },
             {
-                path:"/notfound",
+                path:"*",
                 element:<NotFound/>
             },
             {

@@ -15,20 +15,12 @@ return [
     |
     */
 
-    'paths' => ['*'],
-
-    'allowed_methods' => ['*'],
-
-    'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:3000')],
-
-    'allowed_origins_patterns' => [],
-
+    'paths' => ['api/*'], // Autoriser les routes API
+    'allowed_methods' => ['*'], // Autoriser toutes les méthodes (GET, POST, etc.)
+    'allowed_origins' => ['http://localhost:3000'], // Remplacez par l'URL de votre frontend
     'allowed_headers' => ['*'],
-
     'exposed_headers' => [],
-
     'max_age' => 0,
-
-    'supports_credentials' => true,
+    'supports_credentials' => true, // Important pour les cookies de session
 
 ];
