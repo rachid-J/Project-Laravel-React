@@ -7,6 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\SuperVisor;
+use App\Models\Supplier;
+use App\Models\Brand;
+use App\Models\Order;
+use App\Models\Product;
 
 class Store extends Authenticatable implements JWTSubject
 
@@ -43,5 +48,24 @@ class Store extends Authenticatable implements JWTSubject
         return [];
     }
 
+    public function supervisors(){
+        return $this->hasMany(SuperVisor::class);
+    }
+
+    public function suppliers(){
+        return $this->hasMany(Supplier::class);
+    }
+
+    public function brands(){
+        return $this->hasMany(Brand::class);
+    }
+
+    public function orders(){
+        return $this->hasMany(Order::class);
+    }
+    
+    public function products(){
+        return $this->hasMany(Product::class);
+    }
 }
 
