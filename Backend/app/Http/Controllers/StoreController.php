@@ -71,6 +71,10 @@ class StoreController extends Controller
        ]);
 
     }
+
+
+
+
     /**
      * Display the specified resource.
      */
@@ -99,6 +103,9 @@ class StoreController extends Controller
                 'details' => $e->getMessage(),
             ],500);
     }}
+
+
+
 
     /**
      * Show the form for editing the specified resource.

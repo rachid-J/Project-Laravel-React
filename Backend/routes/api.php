@@ -15,3 +15,5 @@ Route::middleware('auth:store')->prefix('store')->group(function(){
     Route::post('/logout', [StoreController::class, 'logout']);
 });
 
+
+
