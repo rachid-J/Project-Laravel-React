@@ -8,6 +8,7 @@ use App\Http\Requests\StoreRequest;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Models\Product;
 
 class StoreController extends Controller
 {
@@ -100,27 +101,65 @@ class StoreController extends Controller
             ],500);
     }}
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Store $store)
+    
+    public function add(Request $request )
     {
-        //
+        $request -> validate([
+            "name" => "required|string|max:255",
+            "sku" => "required",
+            "brand_id" => "required|exists:brands,id",
+            "description" => "nullable|string",
+            "price" => "required|numeric",
+            "stock" => "required|numeric",
+            "store_id" => "required|exists:stores,id"
+        ]);
+
+        Product::create($request -> all());
+        return response([
+            "message" => "success"
+        ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Store $store)
+    
+    public function update(Request $request ,$id)
     {
-        //
+        $request -> validate([
+            "name" => "required|string|max:255",
+            "sku" => "required",
+            "brand_id" => "required|exists:brands,id",
+            "description" => "nullable|string",
+            "price" => "required|numeric",
+            "stock" => "required|numeric",
+            "store_id" => "required|exists:stores,id"
+        ]);
+
+        $product = Product::find($id);
+
+        if ($product->store_id !== Auth::id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+        $product->update($request->all());
+
+        return response()->json([$product]);
+
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Store $store)
-    {
-        //
+    
+    public function delete($id)
+    {   
+        $product = Product::find($id);
+        if(!$product){
+            return response()->json([
+                "message" => "product not found"
+            ]);
+        }
+        return response()->json([$product]);
+    }
+
+    public function show(){
+        $data = Product::all();
+        return response()->json([
+            "data" => $data
+        ]);
     }
 }

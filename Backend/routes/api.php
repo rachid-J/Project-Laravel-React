@@ -15,3 +15,14 @@ Route::middleware('auth:store')->prefix('store')->group(function(){
     Route::post('/logout', [StoreController::class, 'logout']);
 });
 
+
+
+Route::post("/add",[StoreController::class,"add"]);
+Route::middleware('auth:store')->group(function(){
+    Route::put('/update/{id}', [StoreController::class, 'update']); 
+});
+Route::get("/show",[StoreController::class,"show"]);
+Route::delete("/delete/{id}",[StoreController::class,"delete"]);
+
+
+
