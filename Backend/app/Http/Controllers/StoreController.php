@@ -8,6 +8,7 @@ use App\Http\Requests\StoreRequest;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Models\Product;
 
 class StoreController extends Controller
 {
@@ -107,27 +108,9 @@ class StoreController extends Controller
 
 
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Store $store)
-    {
-        //
-    }
+    
+   
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Store $store)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Store $store)
-    {
-        //
-    }
+    
+   
 }
