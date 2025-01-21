@@ -18,12 +18,8 @@ export default function Dashboard() {
       const response = await axiosClient.post("/store/logout");
       if (response.status === 200) {
         disp(logOut())
-
         
-      
-          navigate("/login");
-     
-        
+        navigate("/loadings");
       }
     } catch (error) {
       console.error("Error during logout:", error);

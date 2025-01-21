@@ -16,7 +16,7 @@ export const Loading = () => {
     }
     else {
       setTimeout(()=> {
-        navigate("/")
+        navigate("/dashboard")
       },1000)
       
     }

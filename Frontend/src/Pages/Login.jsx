@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { axiosClient } from "../Api/axiosClient";
 import { loginSuccess } from "../Redux/features/AuthSlice";
@@ -11,8 +11,6 @@ export default function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
-
-  
 
 
 

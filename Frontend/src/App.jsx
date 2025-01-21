@@ -1,17 +1,13 @@
 
 
-import {RouterProvider} from 'react-router-dom'
-import route from "./router/Routes.jsx"
+
 import './App.css'
+import Router from './router/Routes.jsx'
 
 
 function App() {
   return(
-    <>
-
-        <RouterProvider router={route}/>
-
-    </>
+    Router()
   )
 }
 

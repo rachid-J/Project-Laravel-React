@@ -1,17 +1,16 @@
-import { Outlet, Link, useNavigate } from "react-router-dom";
+import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import Logo from "../picture/Logo.png";
 import { useEffect } from "react";
 
 export default function Guest() {
     const token = localStorage.getItem("access_token");
     const navigate = useNavigate()
+    const location = useLocation()
   
     useEffect(() => {
       if (token){
-       
-
           navigate("/loadings")
-      
+
         
       }
     },[token,navigate]);
@@ -52,12 +51,22 @@ export default function Guest() {
             </Link>
           </div>
           <div className="hidden lg:flex">
-            <button
-              onClick={() => navigate("/login")}
-              className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-semibold py-2 px-6 rounded-full shadow-lg hover:scale-105 transition-transform"
-            >
-              Log in
-            </button>
+            
+          {location.pathname === "/login" ? (
+              <button
+                onClick={() => navigate("/sign_up")}
+                className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-semibold py-2 px-6 rounded-full shadow-lg hover:scale-105 transition-transform"
+              >
+                Sign up
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate("/login")}
+                className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-semibold py-2 px-6 rounded-full shadow-lg hover:scale-105 transition-transform"
+              >
+                Log in
+              </button>
+            )}
           </div>
         </nav>
       </header>
