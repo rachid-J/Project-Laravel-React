@@ -1,8 +1,21 @@
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import Logo from "../picture/Logo.png";
+import { useEffect } from "react";
 
 export default function Guest() {
-  const navigate = useNavigate();
+    const token = localStorage.getItem("access_token");
+    const navigate = useNavigate()
+  
+    useEffect(() => {
+      if (token){
+       
+
+          navigate("/loadings")
+      
+        
+      }
+    },[token,navigate]);
+    
 
   return (
     <div>

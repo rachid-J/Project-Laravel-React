@@ -72,6 +72,10 @@ class StoreController extends Controller
        ]);
 
     }
+
+
+
+
     /**
      * Display the specified resource.
      */
@@ -101,65 +105,12 @@ class StoreController extends Controller
             ],500);
     }}
 
-    
-    public function add(Request $request )
-    {
-        $request -> validate([
-            "name" => "required|string|max:255",
-            "sku" => "required",
-            "brand_id" => "required|exists:brands,id",
-            "description" => "nullable|string",
-            "price" => "required|numeric",
-            "stock" => "required|numeric",
-            "store_id" => "required|exists:stores,id"
-        ]);
 
-        Product::create($request -> all());
-        return response([
-            "message" => "success"
-        ]);
-    }
+
 
     
-    public function update(Request $request ,$id)
-    {
-        $request -> validate([
-            "name" => "required|string|max:255",
-            "sku" => "required",
-            "brand_id" => "required|exists:brands,id",
-            "description" => "nullable|string",
-            "price" => "required|numeric",
-            "stock" => "required|numeric",
-            "store_id" => "required|exists:stores,id"
-        ]);
-
-        $product = Product::find($id);
-
-        if ($product->store_id !== Auth::id()) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-        $product->update($request->all());
-
-        return response()->json([$product]);
-
-    }
+   
 
     
-    public function delete($id)
-    {   
-        $product = Product::find($id);
-        if(!$product){
-            return response()->json([
-                "message" => "product not found"
-            ]);
-        }
-        return response()->json([$product]);
-    }
-
-    public function show(){
-        $data = Product::all();
-        return response()->json([
-            "data" => $data
-        ]);
-    }
+   
 }

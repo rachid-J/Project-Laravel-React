@@ -1,18 +1,25 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { axiosClient } from "../Api/axiosClient";
-
+import { loginSuccess } from "../Redux/features/AuthSlice";
+import { useDispatch } from "react-redux";
 export default function Login() {
-
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
+
+  
+
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-
+    setLoading(true)
     const payload = {
       email : email ,
       password : password
@@ -20,16 +27,24 @@ export default function Login() {
 
     try {
       const response = await axiosClient.post("store/login", payload);
-      const { token } = response.data;
+      if (response.status === 200) {
+        const { token, stock } = response.data;
 
-      // Save the token in localStorage
-      localStorage.setItem("access_token", token);
-      console.log(response)
-      console.log("Logged in user:", response.data.stock);
-      navigate("/dashboard"); 
+        dispatch(loginSuccess({ token, stock }));
+
+        console.log(response.data)
+
+        navigate("/loadings")
+
+      }
+      
     } catch (err) {
       setError("Invalid email or password",err);
+    }finally{
+      setLoading(false); 
     }}
+
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 flex items-center justify-center p-6">
       <div className="max-w-md w-full bg-white/80 backdrop-blur-lg rounded-lg shadow-lg p-8">
@@ -85,9 +100,12 @@ export default function Login() {
           <div>
             <button
               type="submit"
-              className="w-full rounded-md bg-teal-500 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2"
+              className={`w-full rounded-md py-2 px-4 text-sm font-medium text-white shadow-sm ${
+                loading ? "bg-teal-400 cursor-not-allowed" : "bg-teal-500 hover:bg-teal-600"
+              }`}
+              disabled={loading}
             >
-              Sign in
+              {loading ? "Signing in..." : "Sign in"}
             </button>
           </div>
         </form>
