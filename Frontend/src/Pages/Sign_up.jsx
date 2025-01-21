@@ -88,11 +88,29 @@ export default function Sign_up() {
     }
   };
 
+  const progressPercentage = (step / 3) * 100;
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gray-100">
       <div className="max-w-lg w-full bg-white rounded-lg shadow-lg p-8">
         <div className="flex flex-col items-center mb-6">
           <h2 className="text-2xl font-semibold text-gray-800">Create Your Profile</h2>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="relative w-full bg-gray-200 rounded-full h-4 mb-6 shadow-md">
+          <div
+            className="absolute top-0 left-0 h-4 rounded-full bg-gradient-to-r from-teal-400 to-teal-600 transition-all duration-300"
+            style={{ width: `${progressPercentage}%` }}
+          ></div>
+          <div
+            className="absolute -top-3 w-10 h-10 bg-gradient-to-r from-teal-500 to-teal-700 rounded-full shadow-lg flex items-center justify-center text-white text-sm font-semibold transform transition-all duration-300"
+            style={{
+              left: `calc(${progressPercentage}% - 20px)`,
+            }}
+          >
+            {step}
+          </div>
         </div>
 
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
@@ -111,7 +129,7 @@ export default function Sign_up() {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-teal-500"
+                  className="mt-1 h-8 block w-full rounded-md border-gray-300 shadow-sm focus:ring-teal-500"
                 />
               </div>
               <div>
@@ -123,7 +141,7 @@ export default function Sign_up() {
                   value={formData.store_name}
                   onChange={handleChange}
                   required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-teal-500"
+                  className="mt-1 h-8 block w-full rounded-md border-gray-300 shadow-sm focus:ring-teal-500"
                 />
               </div>
               <div>
@@ -134,7 +152,7 @@ export default function Sign_up() {
                   value={formData.store_category}
                   onChange={handleChange}
                   required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-teal-500"
+                  className="mt-1 h-8 block w-full rounded-md border-gray-300 shadow-sm focus:ring-teal-500"
                 >
                   <option value="">Select a category</option>
                   <option value="bakery">Bakery</option>
@@ -158,7 +176,7 @@ export default function Sign_up() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-teal-500"
+                  className="mt-1 h-8 block w-full rounded-md border-gray-300 shadow-sm focus:ring-teal-500"
                 />
               </div>
               <div>
@@ -170,7 +188,7 @@ export default function Sign_up() {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-teal-500"
+                  className="mt-1 h-8 block w-full rounded-md border-gray-300 shadow-sm focus:ring-teal-500"
                 />
               </div>
               <div>
@@ -182,7 +200,7 @@ export default function Sign_up() {
                   value={formData.password_confirmation}
                   onChange={handleChange}
                   required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-teal-500"
+                  className="mt-1 h-8 block w-full rounded-md border-gray-300 shadow-sm focus:ring-teal-500"
                 />
               </div>
             </>
@@ -212,7 +230,7 @@ export default function Sign_up() {
                   value={formData.phone}
                   onChange={handleChange}
                   required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-teal-500"
+                  className="mt-1 h-8 block w-full rounded-md border-gray-300 shadow-sm focus:ring-teal-500"
                 />
               </div>
               <div>
@@ -223,7 +241,7 @@ export default function Sign_up() {
                   value={formData.role}
                   onChange={handleChange}
                   required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-teal-500"
+                  className="mt-1 h-8 block w-full rounded-md border-gray-300 shadow-sm focus:ring-teal-500"
                 >
                   <option value="">Select a profession</option>
                   <option value="admin">Administrator</option>
@@ -238,7 +256,7 @@ export default function Sign_up() {
                   id="photo"
                   name="photo"
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-teal-500"
+                  className="mt-1 h-8 block w-full rounded-md border-gray-300 shadow-sm focus:ring-teal-500"
                 />
               </div>
             </>
@@ -250,7 +268,7 @@ export default function Sign_up() {
               <button
                 type="button"
                 onClick={handleBack}
-                className="rounded-md bg-gray-300 py-2 px-4 text-sm font-medium text-gray-700 hover:bg-gray-400"
+                className="rounded-md w-44 bg-gray-300 py-2 px-4 text-sm font-medium text-gray-700 hover:bg-gray-400"
               >
                 Back
               </button>
@@ -259,7 +277,9 @@ export default function Sign_up() {
               <button
                 type="button"
                 onClick={handleNext}
-                className="rounded-md bg-teal-500 py-2 px-4 text-sm font-medium text-white hover:bg-teal-600"
+                className={`rounded-md w-44 bg-teal-500 py-2 px-4 text-sm font-medium text-white hover:bg-teal-600 ${
+                  step === 1 ? "mx-auto" : ""
+                }`}
               >
                 Next
               </button>
@@ -268,7 +288,7 @@ export default function Sign_up() {
               <button
                 type="submit"
                 disabled={loading}
-                className={`flex items-center justify-center rounded-md py-2 px-4 text-sm font-medium text-white ${
+                className={`flex items-center w-44 justify-center rounded-md py-2 px-4 text-sm font-medium text-white ${
                   loading ? "bg-teal-400" : "bg-teal-500 hover:bg-teal-600"
                 }`}
               >

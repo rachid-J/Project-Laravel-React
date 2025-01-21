@@ -33,19 +33,19 @@ export default function Guest() {
           <div className="hidden lg:flex items-center space-x-6">
             <Link
               to="/store/Features"
-              className="text-sm font-medium text-gray-900 hover:text-blue-600 transition"
+              className="text-sm font-medium text-gray-900 hover:text-green-600 transition"
             >
               Features
             </Link>
             <Link
               to="/store/pricing"
-              className="text-sm font-medium text-gray-900 hover:text-blue-600 transition"
+              className="text-sm font-medium text-gray-900 hover:text-green-600 transition"
             >
               Pricing
             </Link>
             <Link
               to="/signup"
-              className="text-sm font-medium text-gray-900 hover:text-blue-600 transition"
+              className="text-sm font-medium text-gray-900 hover:text-green-600 transition"
             >
               Sign Up
             </Link>
@@ -55,14 +55,16 @@ export default function Guest() {
           {location.pathname === "/login" ? (
               <button
                 onClick={() => navigate("/sign_up")}
-                className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-semibold py-2 px-6 rounded-full shadow-lg hover:scale-105 transition-transform"
+                className="bg-gradient-to-r from-green-500 via-green-400 to-green-300 text-white font-semibold py-2 px-6 rounded-full shadow-lg hover:scale-105 transition-transform"
+
               >
                 Sign up
               </button>
             ) : (
               <button
                 onClick={() => navigate("/login")}
-                className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-semibold py-2 px-6 rounded-full shadow-lg hover:scale-105 transition-transform"
+                className="bg-gradient-to-r from-green-500 via-green-400 to-green-300 text-white font-semibold py-2 px-6 rounded-full shadow-lg hover:scale-105 transition-transform"
+
               >
                 Log in
               </button>

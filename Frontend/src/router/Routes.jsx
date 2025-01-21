@@ -2,7 +2,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Home from "../pages/Home.jsx";
 import Login from "../pages/Login.jsx";
 import Sign_up from "../pages/Sign_up.jsx";
-import Dashbord from "../Pages/Dashbord.jsx";
+
 
 import Guest from "../Components/Guest.jsx";
 import Default from "../Components/Default.jsx";
@@ -14,6 +14,8 @@ import Settings from "../Pages/Settings.jsx";
 import { Loading } from "../Components/Loading.jsx";
 import { NotFound } from "../Components/NotFound.jsx";
 import { useSelector } from "react-redux";
+import Welcome from "../Pages/Welcom.jsx";
+import { Dashboard } from "../Pages/Dashboard.jsx";
 
 export const LOGIN_ROUTE = "/login";
 export const SIGN_UP_ROUTE = "/sign_up";
@@ -41,14 +43,15 @@ const Router = () => {
       children: [
         { path: "/loadings", element: <Loading /> },
         {
-          path: "/dashboard",
-          element: <Dashbord />,
+          path: "/",
+          element: <Welcome />,
           children: [
-            { path: "/dashboard/inventory", element: <Inventory /> },
-            { path: "/dashboard/suppliers", element: <Suppliers /> },
-            { path: "/dashboard/orders", element: <Orders /> },
-            { path: "/dashboard/analytics", element: <Analytics /> },
-            { path: "/dashboard/settings", element: <Settings /> },
+            { path: "/dashboard", element: <Dashboard /> },
+            { path: "/inventory", element: <Inventory /> },
+            { path: "/suppliers", element: <Suppliers /> },
+            { path: "/orders", element: <Orders /> },
+            { path: "/analytics", element: <Analytics /> },
+            { path: "/settings", element: <Settings /> },
           ],
         },
       ],

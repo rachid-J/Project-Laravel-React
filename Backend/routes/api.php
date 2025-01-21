@@ -25,7 +25,7 @@ Route::middleware('auth:store')->prefix("product")->group(function () {
     Route::get("/show/{id}", [ProductController::class, "show"]);
 });
 
-Poute::middleware("auth:store")->prefix("brand")->group(function(){
+Route::middleware("auth:store")->prefix("brand")->group(function(){
     Route::post('/create',[BrandController::class,'create']);
     Route::delete('/delete',[BrandController::class,'delete']);
 });
