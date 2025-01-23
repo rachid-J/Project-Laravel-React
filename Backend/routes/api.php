@@ -19,13 +19,13 @@ Route::middleware('auth:store')->prefix('store')->group(function(){
 });
 
 Route::middleware('auth:store')->prefix("product")->group(function () {
-    Route::post("/create", [ProductController::class, "add"]);
+    Route::post("/create", [ProductController::class, "create"]);
     Route::put("/update/{id}", [ProductController::class, "update"]);
     Route::delete("/delete/{id}", [ProductController::class, "delete"]);
     Route::get("/show/{id}", [ProductController::class, "show"]);
 });
 
-Poute::middleware("auth:store")->prefix("brand")->group(function(){
+Route::middleware("auth:store")->prefix("brand")->group(function(){
     Route::post('/create',[BrandController::class,'create']);
     Route::delete('/delete',[BrandController::class,'delete']);
 });
