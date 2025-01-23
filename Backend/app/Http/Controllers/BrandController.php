@@ -20,7 +20,7 @@ class BrandController extends Controller
         ]);
         $validation['store_id'] = $store->id;
 
-        $brand = Brand::create([$validation]);
+        $brand = Brand::create($validation);
         
         return response()->json([
             "message" => "Brand added successfully",
@@ -42,4 +42,14 @@ class BrandController extends Controller
             "message" => "successfully"
         ]);
     }   
+
+    public function list()
+    {
+        try {
+            $brands = Brand::paginate(10); // Fetch all brands
+            return response()->json($brands, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch brands.'], 500);
+        }
+    }
 }

@@ -23,11 +23,13 @@ Route::middleware('auth:store')->prefix("product")->group(function () {
     Route::put("/update/{id}", [ProductController::class, "update"]);
     Route::delete("/delete/{id}", [ProductController::class, "delete"]);
     Route::get("/show/{id}", [ProductController::class, "show"]);
+    Route::get("/list", [ProductController::class, "list"]);
 });
 
-Poute::middleware("auth:store")->prefix("brand")->group(function(){
+Route::middleware("auth:store")->prefix("brand")->group(function(){
     Route::post('/create',[BrandController::class,'create']);
     Route::delete('/delete',[BrandController::class,'delete']);
+    Route::get('/list', [BrandController::class, 'list']);
 });
 
 

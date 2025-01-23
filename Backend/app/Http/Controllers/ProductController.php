@@ -8,7 +8,7 @@ use App\Models\Product;
 
 class ProductController extends Controller
 {
-    public function create(Request $request)
+    public function add(Request $request)
     {
         $store = auth("store")->user();
         if (!$store) {
@@ -90,4 +90,14 @@ public function show()
         "products" => $products,
     ], 200);
 }
+
+public function list()
+    {
+        try {
+            $products = Product::with('brand')->paginate(10); // Include brand relationship
+            return response()->json($products, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch products.'], 500);
+        }
+    }
 }
