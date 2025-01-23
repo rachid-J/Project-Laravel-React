@@ -26,7 +26,7 @@ export default function Home() {
         <div className="mt-8">
           <button
             onClick={() => navigate("/sign_up")}
-            className="bg-blue-600 px-8 py-4 text-xl text-white rounded-lg shadow-lg hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105"
+            className="bg-green-600 px-8 py-4 text-xl text-white rounded-lg shadow-lg hover:bg-green-700 transition duration-300 ease-in-out transform hover:scale-105"
           >
             Get Started
           </button>

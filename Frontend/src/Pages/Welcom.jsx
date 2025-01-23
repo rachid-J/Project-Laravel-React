@@ -4,7 +4,7 @@ import { useLocation, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { logOut } from "../Redux/features/AuthSlice";
 
 
-export default function Dashboard() {
+export default function Welcome() {
   const location = useLocation();
   const navigate = useNavigate();
   const { stock } = useSelector((state) => state.auth);
@@ -30,11 +30,11 @@ export default function Dashboard() {
 
   const pageTitles = {
     "/dashboard": "Dashboard",
-    "/dashboard/inventory": "Inventory",
-    "/dashboard/suppliers": "Suppliers",
-    "/dashboard/orders": "Orders",
-    "/dashboard/analytics": "Analytics",
-    "/dashboard/settings": "Settings",
+    "/inventory": "Inventory",
+    "/suppliers": "Suppliers",
+    "/orders": "Orders",
+    "/analytics": "Analytics",
+    "/settings": "Settings",
   };
 
   const currentPage = pageTitles[location.pathname] || "Dashboard";
@@ -73,7 +73,7 @@ export default function Dashboard() {
               </li>
               <li>
                 <NavLink
-                  to="/dashboard/inventory"
+                  to="/inventory"
                   className={({ isActive }) =>
                     isActive
                       ? "flex items-center px-3 py-2 text-gray-300 bg-gray-800 rounded-md"
@@ -87,7 +87,7 @@ export default function Dashboard() {
 
               <li>
                 <NavLink
-                  to="/dashboard/suppliers"
+                  to="/suppliers"
                   className={({ isActive }) =>
                     isActive
                       ? "flex items-center px-3 py-2 text-gray-300 bg-gray-800 rounded-md"
@@ -100,7 +100,7 @@ export default function Dashboard() {
               </li>
               <li>
                 <NavLink
-                  to="/dashboard/orders"
+                  to="/orders"
                   className={({ isActive }) =>
                     isActive
                       ? "flex items-center px-3 py-2 text-gray-300 bg-gray-800 rounded-md"
@@ -113,7 +113,7 @@ export default function Dashboard() {
               </li>
               <li>
                 <NavLink
-                  to="/dashboard/analytics"
+                  to="/analytics"
                   className={({ isActive }) =>
                     isActive
                       ? "flex items-center px-3 py-2 text-gray-300 bg-gray-800 rounded-md"
@@ -126,7 +126,7 @@ export default function Dashboard() {
               </li>
               <li>
                 <NavLink
-                  to="/dashboard/settings"
+                  to="/settings"
                   className={({ isActive }) =>
                     isActive
                       ? "flex items-center px-3 py-2 text-gray-300 bg-gray-800 rounded-md"
