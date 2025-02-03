@@ -21,6 +21,7 @@ export default function Suppliers() {
     price: null,
     quantity: "",
   });
+  const [ProductSelected,setProductSelected] = useState({})
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [brands, setBrands] = useState([]);
@@ -98,11 +99,14 @@ export default function Suppliers() {
     e.preventDefault();
     setLoading(true);
     try {
+      if (newOrder.price === null) {
+        newOrder.price = ProductSelected.price;
+      }
       const response = await axiosClient.post('/order/store', newOrder);
       console.log('Order created:', response.data);
       if (response.status === 201) {
         alert('Order created successfully');
-        setNewOrder({brand_name:"", product_id: '', product_name: '', suppliers_id: '', store_id: '', price: '', quantity: 1 });
+        setNewOrder({ brand_name: "", product_id: '', product_name: '', suppliers_id: '', store_id: '', price: '', quantity: 1 });
         toggleOrderModal();
         toggleProductModal();
       } else {
@@ -469,6 +473,7 @@ const handleChoice = (choice) => {
                 value={newOrder.selectedProduct}
                 onChange={(e) => {
                   const selectedProduct = products.find(product => product.product_name === e.target.value);
+                  setProductSelected(selectedProduct);
                   setNewOrder({ 
                     ...newOrder, 
                     product_name: selectedProduct.product_name,
@@ -493,8 +498,8 @@ const handleChoice = (choice) => {
               <input
                 id="product-price"
                 type="number"
-                value={newOrder.price}
-                onChange={(e) => setNewOrder({ ...newOrder, price: e.target.value })}
+                value={ProductSelected.price}
+                readOnly
                 className="w-full border border-gray-300 rounded-lg p-2"
                 placeholder="Price"
                 min="0"

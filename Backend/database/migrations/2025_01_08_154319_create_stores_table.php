@@ -24,6 +24,61 @@ return new class extends Migration
             $table->string('role')->default('Owner');
             $table->timestamps();
         });
+
+        Schema::create('brands', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->unique();
+            $table->foreignId('store_id')->constrained('stores')->cascadeOnDelete();
+            $table->timestamps();
+            $table->softDeletes();
+        });
+        Schema::create('supervisors', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->string('password');
+            $table->string('role');
+            $table->foreignId('store_id')->constrained('stores')->cascadeOnDelete();
+            $table->timestamps();
+            $table->softDeletes();
+        });
+        Schema::create('suppliers', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->string('phone_number');
+            $table->text('address')->nullable();
+            $table->foreignId('store_id')->constrained('stores')->cascadeOnDelete();
+            $table->foreignId('brand_id')->constrained('brands')->cascadeOnDelete(); // Add brand_id foreign key
+            $table->timestamps();
+            $table->softDeletes();
+        });
+        Schema::create('products', function (Blueprint $table) {
+            $table->id();
+            $table->string('product_name');
+            $table->foreignId('brand_id')->nullable()->constrained('brands')->cascadeOnDelete();
+            $table->foreignId('suppliers_id')->constrained('suppliers')->cascadeOnDelete();
+            $table->foreignId('store_id')->constrained('stores')->cascadeOnDelete();
+            $table->decimal('price', 10, 2);
+            $table->integer('quantity');
+            $table->string('status')->default('Available');  
+            $table->timestamps();
+            $table->softDeletes();
+        });
+        Schema::create('orders', function (Blueprint $table) {
+            $table->id();
+            $table->string('product_name');
+            $table->string('brand_name');
+            $table->foreignId('suppliers_id')->constrained('suppliers')->cascadeOnDelete();
+            $table->foreignId('store_id')->constrained('stores')->cascadeOnDelete();
+            $table->foreignId('product_id')->nullable()->constrained('products')->cascadeOnDelete();
+            $table->decimal('price', 10, 2);
+            $table->integer('quantity');
+            $table->decimal('total_price', 10, 2)->default(0);
+            $table->string('status')->default('Pending');  
+            $table->timestamps();
+            $table->softDeletes();
+        });
     }
 
     /**

@@ -79,7 +79,7 @@ class OrderController extends Controller
             ], 401);
         }
         $orders = Order::findOrFail($request->id);
-        if($orders->status == "Cancelled"){
+        if($orders->status === "Cancelled" || $orders->status === "Paid"){
             return response()->json(["message" => "Order already Cancelled."], 400);
         }
     
