@@ -3,33 +3,42 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Store;
-use App\Models\Brand;
+use App\Models\Supplier;
 use App\Models\Order;
-
 
 class Product extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
-        'name',
-        'sku',
+        'product_name',
         'brand_id',
-        'description',
+        'suppliers_id', 
+        'store_id',
         'price',
-        'stock',
-        'store_id'
+        'quantity',
+        'status',
     ];
 
-    public function store (){
-        return $this->belongTo(Store::class);
+
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
+    }
+
+    public function supplier()
+    {
+        return $this->belongsTo(Supplier::class);
+    }
+
+    public function order()
+    {
+        return $this->hasMany(Order::class);
     }
 
     public function brand(){
         return $this->belongsTo(Brand::class);
     }
-    public function orders(){
-        return $this->hasMany(Order::class);
-    }
-
-    
 }

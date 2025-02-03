@@ -1,32 +1,25 @@
-import {  useDispatch, useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { axiosClient } from "../Api/axiosClient";
 import { useLocation, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { logOut } from "../Redux/features/AuthSlice";
-
 
 export default function Welcome() {
   const location = useLocation();
   const navigate = useNavigate();
   const { stock } = useSelector((state) => state.auth);
-  const disp = useDispatch()
-  
-
+  const disp = useDispatch();
 
   const logout = async () => {
-   
     try {
       const response = await axiosClient.post("/store/logout");
       if (response.status === 200) {
-        disp(logOut())
-        
+        disp(logOut());
         navigate("/loadings");
       }
     } catch (error) {
       console.error("Error during logout:", error);
     }
   };
-
-  
 
   const pageTitles = {
     "/dashboard": "Dashboard",
@@ -40,192 +33,87 @@ export default function Welcome() {
   const currentPage = pageTitles[location.pathname] || "Dashboard";
 
   return (
-    <div>
-      <div className="flex h-full">
-        {/* Sidebar */}
-        <aside className="w-64 min-h-screen bg-gray-900 text-white flex flex-col">
-          <div className="flex flex-col items-center justify-center h-16 border-b border-gray-800">
-          <div className="text-sm">
+    <div className="flex bg-gray-100">
+      {/* Sidebar */}
+      <aside className="w-72 bg-indigo-700 text-white flex flex-col p-6 shadow-lg">
+        {/* Profile Section */}
+        <div className="flex flex-col items-center mb-8">
+          <img
+            src={`http://127.0.0.1:8000/storage/${stock.photo}`}
+            alt="Profile"
+            className="rounded-full w-20 h-20 border-4 border-indigo-400 shadow-md mb-4"
+          />
+          <h2 className="text-lg font-semibold">{stock?.name}</h2>
+          <p className="text-sm text-indigo-200">{stock?.role}</p>
+        </div>
+
+        {/* Navigation Menu */}
+        <nav className="flex-1 space-y-4">
+          {[
+            { to: "/dashboard", label: "Dashboard", icon: "dashboard" },
+            { to: "/inventory", label: "Inventory", icon: "inventory" },
+            { to: "/suppliers", label: "Suppliers", icon: "local_shipping" },
+            { to: "/orders", label: "Orders", icon: "shopping_cart" },
+            { to: "/analytics", label: "Analytics", icon: "bar_chart" },
+            { to: "/settings", label: "Settings", icon: "settings" },
+          ].map(({ to, label, icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) =>
+                isActive
+                  ? "flex items-center space-x-4 px-4 py-3 bg-indigo-600 rounded-lg shadow-md"
+                  : "flex items-center space-x-4 px-4 py-3 text-indigo-200 hover:bg-indigo-600 rounded-lg"
+              }
+            >
+              <span className="material-icons">{icon}</span>
+              <span className="font-medium">{label}</span>
+            </NavLink>
+          ))}
+        </nav>
+
+        {/* Logout Button */}
+        <div className="mt-auto pt-6 border-t border-indigo-600">
+          <button
+            onClick={logout}
+            className="w-full flex items-center justify-start px-4 py-3 text-indigo-200 hover:text-white hover:bg-indigo-600 rounded-lg"
+          >
+            <span className="material-icons">logout</span>
+            <span className="ml-4">Logout</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <header className="h-16 bg-white shadow flex items-center justify-between px-8">
+          <h1 className="text-2xl font-semibold text-gray-800">{currentPage}</h1>
+          <div className="flex items-center space-x-6">
+            {/* Notifications */}
+            <button className="text-gray-500 hover:text-gray-700">
+              <span className="material-icons">notifications</span>
+            </button>
+
+            {/* Profile Section */}
+            <div className="flex items-center space-x-4">
+              <div className="text-sm">
+                <p className="font-medium text-gray-700">{stock.name}</p>
+                <p className="text-gray-500 text-sm">{stock.role}</p>
+              </div>
               <img
                 src={`http://127.0.0.1:8000/storage/${stock.photo}`}
                 alt="Profile"
-                className="rounded-full w-8 h-8"
+                className="w-12 h-12 rounded-full border-2 border-indigo-500 shadow-sm"
               />
             </div>
-            <div className="text-lg font-semibold">
-            {stock?.name}
-            </div>
           </div>
-          <nav className="flex-1 px-4 py-6">
-            <ul className="space-y-4">
-              <li>
-                <NavLink
-                  to="/dashboard"
-                  className={({ isActive }) =>
-                    isActive
-                      ? "flex items-center px-3 py-2 text-gray-300 bg-gray-800 rounded-md"
-                      : "flex items-center px-3 py-2 text-gray-300 hover:bg-gray-700 rounded-md"
-                  }
-                >
-                  <span className="material-icons mr-3">dashboard</span>
-                  Dashboard
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/inventory"
-                  className={({ isActive }) =>
-                    isActive
-                      ? "flex items-center px-3 py-2 text-gray-300 bg-gray-800 rounded-md"
-                      : "flex items-center px-3 py-2 text-gray-300 hover:bg-gray-700 rounded-md"
-                  }
-                >
-                  <span className="material-icons mr-3">inventory</span>
-                  Inventory
-                </NavLink>
-              </li>
+        </header>
 
-              <li>
-                <NavLink
-                  to="/suppliers"
-                  className={({ isActive }) =>
-                    isActive
-                      ? "flex items-center px-3 py-2 text-gray-300 bg-gray-800 rounded-md"
-                      : "flex items-center px-3 py-2 text-gray-300 hover:bg-gray-700 rounded-md"
-                  }
-                >
-                  <span className="material-icons mr-3">local_shipping</span>
-                  Suppliers
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/orders"
-                  className={({ isActive }) =>
-                    isActive
-                      ? "flex items-center px-3 py-2 text-gray-300 bg-gray-800 rounded-md"
-                      : "flex items-center px-3 py-2 text-gray-300 hover:bg-gray-700 rounded-md"
-                  }
-                >
-                  <span className="material-icons mr-3">shopping_cart</span>
-                  Orders
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/analytics"
-                  className={({ isActive }) =>
-                    isActive
-                      ? "flex items-center px-3 py-2 text-gray-300 bg-gray-800 rounded-md"
-                      : "flex items-center px-3 py-2 text-gray-300 hover:bg-gray-700 rounded-md"
-                  }
-                >
-                  <span className="material-icons mr-3">bar_chart</span>
-                  Analytics
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/settings"
-                  className={({ isActive }) =>
-                    isActive
-                      ? "flex items-center px-3 py-2 text-gray-300 bg-gray-800 rounded-md"
-                      : "flex items-center px-3 py-2 text-gray-300 hover:bg-gray-700 rounded-md"
-                  }
-                >
-                  <span className="material-icons mr-3">settings</span>
-                  Settings
-                </NavLink>
-              </li>
-            </ul>
-            <div className="mt-8">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                Your teams
-              </h3>
-              <ul className="mt-4 space-y-2">
-                <li>
-                  <a
-                    href="#"
-                    className="flex items-center px-3 py-2 text-gray-300 hover:bg-gray-700 rounded-md"
-                  >
-                    <span className="mr-3 bg-gray-700 rounded-full w-6 h-6 flex items-center justify-center">
-                      H
-                    </span>
-                    Heroicons
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="flex items-center px-3 py-2 text-gray-300 hover:bg-gray-700 rounded-md"
-                  >
-                    <span className="mr-3 bg-gray-700 rounded-full w-6 h-6 flex items-center justify-center">
-                      T
-                    </span>
-                    Tailwind Labs
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="flex items-center px-3 py-2 text-gray-300 hover:bg-gray-700 rounded-md"
-                  >
-                    <span className="mr-3 bg-gray-700 rounded-full w-6 h-6 flex items-center justify-center">
-                      W
-                    </span>
-                    Workcation
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </nav>
-          <div className="border-t border-gray-800 p-4">
-            <button
-              onClick={logout}
-              className="flex items-center text-gray-300 hover:text-white w-full"
-            >
-              <span className="material-icons mr-3">logout</span>
-              Logout
-            </button>
-          </div>
-        </aside>
-
-        {/* Main content */}
-        <div className="flex-1 flex flex-col">
-          <header className="h-16 bg-white shadow flex items-center justify-between px-6">
-            <div className="text-gray-700 text-lg font-bold">{currentPage}</div>
-            <div className="flex items-center space-x-4">
-              {/* Notification Button */}
-              <button className="text-gray-500 hover:text-gray-700 flex justify-center">
-                <span className="material-icons">notifications</span>
-              </button>
-
-              {/* Profile Section */}
-              <div className="flex items-center space-x-4">
-                {/* Name and Role */}
-                <div className="text-sm">
-                  <p className="text-gray-700 font-medium">
-                    {stock.name}
-                  </p>
-                  <p className="text-gray-500 text-xs">
-                    {stock.role}
-                  </p>
-                </div>
-                {/* Profile Image */}
-                <div className="relative w-10 h-10">
-                  <img
-                    src={`http://127.0.0.1:8000/storage/${stock.photo}`}
-                    alt="Profile"
-                    className="w-full h-full rounded-full object-cover"
-                  />
-                </div>
-              </div>
-            </div>
-          </header>
-          <main>
-            <Outlet />
-          </main>
-        </div>
+        {/* Main Section */}
+        <main className="flex-1 p-6 bg-gray-50">
+          <Outlet />
+        </main>
       </div>
     </div>
   );

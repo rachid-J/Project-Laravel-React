@@ -43,11 +43,13 @@ class BrandController extends Controller
         ]);
     }   
 
-    public function list()
+    public function show()
     {
         try {
-            $brands = Brand::paginate(10); // Fetch all brands
-            return response()->json($brands, 200);
+           if( $store = auth('store')->user()) {
+                $brands = Brand::where('store_id', $store->id)->paginate(10); // Fetch all brands
+                return response()->json(["Brands" =>$brands], 200);
+           };
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to fetch brands.'], 500);
         }

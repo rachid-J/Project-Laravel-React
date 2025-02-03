@@ -8,60 +8,63 @@ use App\Models\Product;
 
 class ProductController extends Controller
 {
-    public function add(Request $request)
-    {
-        $store = auth("store")->user();
-        if (!$store) {
-            return response()->json([
-                "message" => "Unauthorized: You do not own this store.",
-            ], 401);
-        }
 
-        $validatedData = $request->validate([
-            "name" => "required|string|max:255",
-            "sku" => "required|string|unique:products,sku",
-            "brand_id" => "required|exists:brands,id",
-            "description" => "nullable|string",
-            "price" => "required|numeric|min:0",
-            "stock" => "required|integer|min:0",
-        ]);
-        $validatedData["store_id"] = $store->id;
-
-        $product = Product::create($validatedData);
-
-        return response()->json([
-            "message" => "Product added successfully",
-            "product" => $product,
-        ], 201);
+    public function create(Request $request)
+{
+    // Get the authenticated store
+    $store = auth('store')->user();
+    if (!$store) {
+        return response()->json(["message" => "Unauthorized"], 401);
     }
 
-    
+    // Validate incoming data
+    $validatedData = $request->validate([
+        'product_name' => 'required|string|max:255',
+        'price' => 'required|numeric|min:0',
+        'quantity' => 'required|integer|min:1',
+    ]);
+
+    // Calculate total price based on price and quantity
+    $validatedData['total_price'] = $validatedData['price'] * $validatedData['quantity'];
+    $validatedData['store_id'] = $store->id;  // Store the authenticated store ID
+
+    // Create the product
+    $product = Product::create($validatedData);
+
+    // Return response
+    return response()->json([
+        'message' => 'Product created successfully',
+        'product' => $product
+    ], 201);
+}
+
     public function update(Request $request, $id)
 {
     $product = Product::findOrFail($id);
     $store = auth("store")->user();
-    if (!$store) {
-        return response()->json([
-            "message" => "Unauthorized: You do not own this store.",
-        ], 401);
+
+    if (!$store || $product->store_id !== $store->id) {
+        return response()->json(["message" => "Unauthorized"], 401);
     }
+
     $validatedData = $request->validate([
-        "name" => "sometimes|string|max:255",
-        "sku" => "sometimes|string|unique:products,sku,". $product->id,
-        "brand_id" => "sometimes|exists:brands,id" ,
-        "description" => "nullable|string",
+        "product_name" => "sometimes|string|max:255",
         "price" => "sometimes|numeric|min:0",
-        "stock" => "sometimes|integer|min:0",
-        "store_id" => "sometimes"
+        "quantity" => "sometimes|integer|min:1",
     ]);
+
+    // Calculate total price dynamically
+    if (isset($validatedData['price']) || isset($validatedData['quantity'])) {
+        $validatedData['total_price'] = 
+            ($validatedData['price'] ?? $product->price) * 
+            ($validatedData['quantity'] ?? $product->quantity);
+    }
 
     $product->update($validatedData);
 
-    return response()->json([
-        "message" => "Product updated successfully",
-        "product" => $product,
-    ], 200);
+    return response()->json(["message" => "Product updated", "product" => $product], 200);
 }
+
 
     
 public function delete($id)
@@ -83,21 +86,18 @@ public function delete($id)
 
 public function show()
 {
-    $storeId = auth('store')->id();
-    $products = Product::where('store_id', $storeId)->get();
+    $store = auth('store')->user();
+    if ($store) {
+        $products = Product::with("store", "brand", "order")->paginate(7);
+        return response()->json([
+            "message" => "Products retrieved successfully",
+            "data" => $products, // Ensure the key is 'data' for consistency
+        ], 200);
+    }
     return response()->json([
-        "message" => "Products retrieved successfully",
-        "products" => $products,
-    ], 200);
+        "message" => "Products retrieved unsuccessfully",
+    ], 404);
 }
 
-public function list()
-    {
-        try {
-            $products = Product::with('brand')->paginate(10); // Include brand relationship
-            return response()->json($products, 200);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to fetch products.'], 500);
-        }
-    }
+
 }

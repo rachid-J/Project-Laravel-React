@@ -112,7 +112,7 @@ return [
         ],
         'stores' => [
             'provider' => 'stores',
-            'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
+            'table' => env('AUTH_STORE_RESET_TOKEN_TABLE', 'store_reset_tokens'),
             'expire' => 60,
             'throttle' => 60,
         ],

@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('phone_number');
             $table->text('address')->nullable();
             $table->foreignId('store_id')->constrained('stores')->cascadeOnDelete();
+            $table->foreignId('brand_id')->constrained('brands')->cascadeOnDelete(); // Add brand_id foreign key
             $table->timestamps();
             $table->softDeletes();
         });

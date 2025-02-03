@@ -10,24 +10,29 @@ use App\Models\Store;
 class Order extends Model
 {
     protected $fillable = [
-        'product_id',
+        'brand_name',
+        'product_name',
         'suppliers_id',
         'store_id',
+        'product_id',
+        'price',
         'quantity',
         'total_price',
         'status'
     ];
 
-    public function product(){
-        return $this->belongTo(Product::class);
-    }
 
-    public function supplier(){
+
+    public function suppliers(){
         return $this->belongsTo(Supplier::class);
     }
 
     public function store(){
         return $this->belongsTo(Store::class);
+    }
+
+    public function products(){
+        return $this->belongsTo(Product::class);
     }
 
     

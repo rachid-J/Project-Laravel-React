@@ -1,48 +1,78 @@
 import { useState, useEffect } from "react";
-import AddProductModal from "../Components/AddProductModal";
 import AddBrandModal from "../Components/AddBrandModal";
+
+import ShowMoreBrandModal from "../Components/ShowMoreBrandModal"; // New Component
 import { axiosClient } from "../Api/axiosClient";
+import EditProductModal from "../Components/EditProductModal";
 
 const Inventory = () => {
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [brands, setBrands] = useState([]);
-  const [products, setProducts] = useState([]);
   const [showProductModal, setShowProductModal] = useState(false);
+  const [brands, setBrands] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [error, setError] = useState(null);
   const [showBrandModal, setShowBrandModal] = useState(false);
+  const [showBrandDetailsModal, setShowBrandDetailsModal] = useState(false); // Toggle for "Show More"
   const [loading, setLoading] = useState(false);
-
-  
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [currentStep, setCurrentStep] = useState(1); // Step for table pagination
+  const itemsPerStep = 5; // Products per page
 
   useEffect(() => {
     fetchBrands();
-    fetchProducts();
+    fetchOrders();
   }, []);
 
   const fetchBrands = async () => {
     try {
-      const response = await axiosClient.get("/brand/list");
-      setBrands(response.data.data); // Adjusting for paginated response if needed
-    } catch (error) {
-      console.error("Error fetching brands:", error);
-    }
-  };
-
-  const fetchProducts = async () => {
-    try {
-      const response = await axiosClient.get("/product/list");
-      setProducts(response.data.data); // Adjusting for paginated response if needed
+      const response = await axiosClient.get("/brand/show");
+      setBrands(response.data.Brands.data);
+      console.log(response.data.Brands.data);
     } catch (error) {
       console.error("Error fetching brands:", error);
     }
   };
 
   const handleToggleModal = (modalType, state) => {
-    if (modalType === "product") {setShowProductModal(state);
-    if (!state) setSelectedProduct(null)};
+    if (modalType === "product") setShowProductModal(state);
     if (modalType === "brand") setShowBrandModal(state);
+    if (modalType === "brandDetails") setShowBrandDetailsModal(state);
   };
 
   const handleSaveProduct = async (productData) => {
+    setLoading(true);
+    try {
+      if (productData.id) {
+        await axiosClient.put(`/product/update/${productData.id}`, {
+          product_name: productData.name,
+          price: productData.price,
+          quantity: productData.stock,
+        });
+        alert("Product updated successfully!");
+      }
+      fetchOrders();
+    } catch (error) {
+      console.error("Error saving product:", error);
+      alert("Failed to save product. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const response = await axiosClient.get("/product/show");
+      setOrders(response.data.data.data);
+      console.log(response.data.data.data);
+    } catch (error) {
+      setError("Error fetching orders. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveBrand = async (newBrand) => {
     setLoading(true);
     try {
       const token = localStorage.getItem("access_token");
@@ -50,53 +80,9 @@ const Inventory = () => {
         alert("Unauthorized. Please log in again.");
         return;
       }
-  
-      // Check if the product has an ID (indicates editing an existing product)
-      if (productData.id) {
-        // Update existing product
-        await axiosClient.put(`/product/update/${productData.id}`, productData, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        alert("Product updated successfully!");
-      } else {
-        // Add new product
-        await axiosClient.post("/product/create", productData, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        alert("Product added successfully!");
-      }
-  
-      fetchProducts(); // Refresh the product list
-    } catch (error) {
-      console.error("Error saving product:", error);
-      alert("Failed to save product. Please try again.");
-    } finally {
-      setLoading(false);
-      setShowProductModal(false); // Close the modal after save
-    }
-  };
-  
-
-  const handleSaveBrand = async (newBrand) => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        alert('Unauthorized. Please log in again.');
-        return; // Prevent further action if no token is found
-      }
-      console.log("Token Retrieved:", token); // Log token to verify it's retrieved
-      
-      const response = await axiosClient.post("/brand/create", newBrand, {
-        headers: {
-          Authorization: `Bearer ${token}`, // Include token in the headers
-        },
+      await axiosClient.post("/brand/create", newBrand, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("Brand saved:", response.data);
       alert("Brand added successfully!");
       fetchBrands();
     } catch (error) {
@@ -107,134 +93,182 @@ const Inventory = () => {
       setShowBrandModal(false);
     }
   };
-  
+
   const handleDeleteProduct = async (productId) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
-  
     try {
       await axiosClient.delete(`/product/delete/${productId}`);
       alert("Product deleted successfully!");
-      fetchProducts(); // Refresh the product list
+      fetchOrders();
     } catch (error) {
       console.error("Error deleting product:", error);
       alert("Failed to delete product. Please try again.");
     }
   };
-  
-  
+
+  const handleSaleProduct = async () => {
+    
+  } 
+
+  const handleEditProduct = (product) => {
+    setSelectedProduct(product);
+    setShowProductModal(true);
+  };
+
+  const currentOrders = orders.slice(
+    (currentStep - 1) * itemsPerStep,
+    currentStep * itemsPerStep
+  );
+
+  const handleNextStep = () => {
+    if (currentStep * itemsPerStep < orders.length) setCurrentStep(currentStep + 1);
+  };
+
+  const handlePreviousStep = () => {
+    if (currentStep > 1) setCurrentStep(currentStep - 1);
+  };
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
-  <div className="flex justify-between mb-6">
-    {/* Buttons for Adding */}
-    <button
-      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-      onClick={() => handleToggleModal("product", true)}
-    >
-      Add Product
-    </button>
-    <button
-      className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-      onClick={() => handleToggleModal("brand", true)}
-    >
-      Add Brand
-    </button>
-  </div>
-
-  {loading && <p className="text-gray-500">Processing...</p>}
-
-  {/* Product Modal */}
-  <AddProductModal
-    show={showProductModal}
-    handleClose={() => handleToggleModal("product", false)}
-    handleSave={handleSaveProduct}
-    brands={brands}
-    selectedProduct={selectedProduct}
-  />
-
-  {/* Brand Modal */}
-  <AddBrandModal
-    show={showBrandModal}
-    handleClose={() => handleToggleModal("brand", false)}
-    handleSave={handleSaveBrand}
-  />
-
-  {/* Products Table */}
-  <div className="mt-6">
-    <h3 className="text-2xl font-semibold mb-4">Product Inventory</h3>
-    {Array.isArray(products) && products.length > 0 ? (
-      <div className="overflow-x-auto bg-white shadow-lg rounded-lg p-4">
-        <table className="table-auto w-full border-collapse">
-          <thead>
-            <tr className="bg-gray-200 text-left text-sm uppercase font-semibold text-gray-700">
-              <th className="py-3 px-4">Name</th>
-              <th className="py-3 px-4">SKU</th>
-              <th className="py-3 px-4">Price</th>
-              <th className="py-3 px-4">Stock</th>
-              <th className="py-3 px-4">Brand</th>
-              <th className="py-3 px-4">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product) => (
-              <tr
-                key={product.id}
-                className="border-t hover:bg-gray-100 transition"
+    <div className="p-6 bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300  flex flex-col lg:flex-row gap-6">
+      {/* Sidebar for Brands */}
+      <aside className="bg-white rounded-3xl shadow-md p-6 lg:w-1/4">
+        <h3 className="text-xl font-semibold text-gray-700 mb-6">Brand Inventory</h3>
+        {Array.isArray(brands) && brands.length > 0 ? (
+          <ul className="space-y-4">
+            {brands.slice(0, 4).map((brand) => (
+              <li
+                key={brand.id}
+                className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow"
               >
-                <td className="py-2 px-4">{product.name}</td>
-                <td className="py-2 px-4">{product.sku}</td>
-                <td className="py-2 px-4">${product.price}</td>
-                <td className="py-2 px-4">{product.stock}</td>
-                <td className="py-2 px-4">
-                  {product.brand?.name || "No Brand"}
-                </td>
-                <td className="py-2 px-4 space-x-2">
-                  <button
-                    className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
-                    onClick={() => {
-                      setSelectedProduct(product); // Set the product to edit
-                      setShowProductModal(true); // Open the modal
-                    }}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                    onClick={() => handleDeleteProduct(product.id)}
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
+                <div className="flex justify-between items-center">
+                  <span>{brand.name}</span>
+                </div>
+              </li>
             ))}
-          </tbody>
-        </table>
-      </div>
-    ) : (
-      <p>No products available.</p>
-    )}
-  </div>
+          </ul>
+        ) : (
+          <p className="text-gray-500">No brands available.</p>
+        )}
+        <button
+          className="mt-6 bg-gradient-to-r from-green-400 to-green-600 text-white w-full py-3 rounded-xl shadow-sm hover:shadow-md transition-shadow"
+          onClick={() => handleToggleModal("brandDetails", true)}
+        >
+          Show More
+        </button>
+        <button
+          className="mt-6 bg-gradient-to-r from-green-400 to-green-600 text-white w-full py-3 rounded-xl shadow-sm hover:shadow-md transition-shadow"
+          onClick={() => handleToggleModal("brand", true)}
+        >
+          + Add Brand
+        </button>
+      </aside>
 
-  {/* Brands List */}
-  <div className="mt-12">
-    <h3 className="text-2xl font-semibold mb-4">Brand Inventory</h3>
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {Array.isArray(brands) && brands.length > 0 ? (
-        brands.map((brand) => (
-          <div
-            key={brand.id}
-            className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow"
+      {/* Main Section for Products */}
+      <main className="flex-1 bg-white rounded-3xl shadow-md p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-2xl font-semibold text-gray-700">Product Inventory</h3>
+        </div>
+  	    {error && <div className="text-red-500 mb-4">{error}</div>}
+        {loading && <p className="text-gray-500">Processing...</p>}
+
+        {/* Products Table */}
+        <div className="overflow-x-auto">
+          {Array.isArray(currentOrders) && currentOrders.length > 0 ? (
+            <table className="table-auto w-full border-collapse bg-gray-50 rounded-xl shadow-sm">
+              <thead>
+                <tr className="text-left bg-gradient-to-r from-gray-200 via-gray-300 to-gray-400 text-gray-800 text-sm uppercase font-semibold">
+                  <th className="py-3 px-4 rounded-tl-xl">Product Id</th>
+                  <th className="py-3 px-4">Product Name</th>
+                  <th className="py-3 px-4">Price</th>
+                  <th className="py-3 px-4">Stock</th>
+                  <th className="py-3 px-4">Brand</th>
+                  <th className="py-3 px-4 rounded-tr-xl">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentOrders.map((order) => (
+                  <tr
+                    key={order.id}
+                    className="bg-white hover:bg-gray-100 transition border-t"
+                  >
+                  <td className="py-3 px-4">{order.id}</td>
+                  <td className="py-3 px-4">{order.product_name}</td>
+                  <td className="py-3 px-4">${order.price}</td>
+                  <td className="py-3 px-4">{order.quantity}</td>
+                  <td className="py-3 px-4">{order.brand.name || "no brand"}</td>
+                    <td className="py-3 px-4 space-x-2">
+                      <button
+                        className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white px-3 py-1 rounded-lg shadow-sm hover:shadow-md"
+                        onClick={() => handleEditProduct(order)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="bg-gradient-to-r from-red-400 to-red-600 text-white px-3 py-1 rounded-lg shadow-sm hover:shadow-md"
+                        onClick={() => handleDeleteProduct(order.id)}
+                      >
+                        Delete
+                      </button>
+                      <button
+                        className="bg-gradient-to-r from-green-400 to-green-600 text-white px-3 py-1 rounded-lg shadow-sm hover:shadow-md"
+                        onClick={() => handleSaleProduct(order.id)}
+                      >
+                        Sale
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p className="text-gray-500 text-center">No products available.</p>
+          )}
+        </div>
+
+        {/* Pagination */}
+        <div className="flex justify-between items-center mt-6">
+          <button
+            disabled={currentStep === 1}
+            className={`px-4 py-2 rounded ${
+              currentStep === 1 ? "bg-gray-300" : "bg-blue-500 text-white"
+            }`}
+            onClick={handlePreviousStep}
           >
-            <h4 className="font-semibold text-lg text-gray-800">{brand.name}</h4>
-          </div>
-        ))
-      ) : (
-        <p>No brands available.</p>
-      )}
-    </div>
-  </div>
-</div>
+            Previous
+          </button>
+          <span>Step {currentStep}</span>
+          <button
+            disabled={currentStep * itemsPerStep >= orders.length}
+            className={`px-4 py-2 rounded ${
+              currentStep * itemsPerStep >= orders.length
+                ? "bg-gray-300"
+                : "bg-blue-500 text-white"
+            }`}
+            onClick={handleNextStep}
+          >
+            Next
+          </button>
+        </div>
+      </main>
 
+      <EditProductModal
+      show={showProductModal}
+      handleClose={() => handleToggleModal("product", false)}
+      handleSave={handleSaveProduct}
+      product={selectedProduct}
+      />
+
+      <AddBrandModal
+        show={showBrandModal}
+        handleClose={() => handleToggleModal("brand", false)}
+        handleSave={handleSaveBrand}
+      />
+      <ShowMoreBrandModal
+        show={showBrandDetailsModal}
+        brands={brands}
+        handleClose={() => handleToggleModal("brandDetails", false)}
+      />
+    </div>
   );
 };
 
