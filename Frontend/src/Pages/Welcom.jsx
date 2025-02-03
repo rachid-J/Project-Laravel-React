@@ -35,7 +35,7 @@ export default function Welcome() {
   return (
     <div className="flex bg-gray-100">
       {/* Sidebar */}
-      <aside className="w-72 bg-indigo-700 text-white flex flex-col p-6 shadow-lg">
+      <aside className="w-72 h-screen bg-indigo-700 text-white flex flex-col p-6 shadow-lg">
         {/* Profile Section */}
         <div className="flex flex-col items-center mb-8">
           <img

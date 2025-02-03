@@ -21,7 +21,7 @@ useEffect(() => {
     
     <div>
       <div className="flex flex-col">
-    <main className="flex-grow">
+    <main className=" flex-grow">
       <Outlet /> 
     </main>
   </div>
