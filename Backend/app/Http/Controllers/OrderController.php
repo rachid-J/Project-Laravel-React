@@ -91,14 +91,6 @@ class OrderController extends Controller
     }
 
 
-
-        
-
-        
-    
-    
-
-
     // Store a new order
     public function store(Request $request)
     {
