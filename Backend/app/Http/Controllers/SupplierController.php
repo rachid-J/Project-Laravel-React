@@ -11,6 +11,12 @@ class SupplierController extends Controller
     // Fetch all suppliers with associated stores
     public function index()
     {
+        $store = auth('store')->user();
+        if (!$store) {
+            return response()->json([
+                "message" => "Unauthorized: You do not own this store.",
+            ], 401);
+        }
         $suppliers = Supplier::with('store',"brand")->get();
         return response()->json($suppliers);
     }

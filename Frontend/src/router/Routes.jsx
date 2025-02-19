@@ -7,15 +7,16 @@ import Sign_up from "../pages/Sign_up.jsx";
 import Guest from "../Components/Guest.jsx";
 import Default from "../Components/Default.jsx";
 import Inventory from "../Pages/Inventory.jsx";
+import Customers from "../Pages/Customers.jsx";
 import Suppliers from "../Pages/Suppliers.jsx";
 import Orders from "../Pages/Orders.jsx";
-import Analytics from "../Pages/Analytics.jsx";
 import Settings from "../Pages/Settings.jsx";
 import { Loading } from "../Components/Loading.jsx";
 import { NotFound } from "../Components/NotFound.jsx";
 import { useSelector } from "react-redux";
 import Welcome from "../Pages/Welcom.jsx";
-import { Dashboard } from "../Pages/Dashboard.jsx";
+import  Dashboard  from "../Pages/Dashboard.jsx";
+import Sells from "../Pages/Sells.jsx";
 
 export const LOGIN_ROUTE = "/login";
 export const SIGN_UP_ROUTE = "/sign_up";
@@ -48,9 +49,10 @@ const Router = () => {
           children: [
             { path: "/dashboard", element: <Dashboard /> },
             { path: "/inventory", element: <Inventory /> },
+            { path: "/customers", element: <Customers /> },
             { path: "/suppliers", element: <Suppliers /> },
             { path: "/orders", element: <Orders /> },
-            { path: "/analytics", element: <Analytics /> },
+            { path: "/sells", element: <Sells /> },
             { path: "/settings", element: <Settings /> },
           ],
         },

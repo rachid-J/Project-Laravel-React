@@ -67,5 +67,9 @@ class Store extends Authenticatable implements JWTSubject
     public function product(){
         return $this->hasMany(Product::class);
     }
+    public function sell(){
+        return $this->hasMany(Sell::class);
+    }
 }
+
 

@@ -24,9 +24,10 @@ export default function Welcome() {
   const pageTitles = {
     "/dashboard": "Dashboard",
     "/inventory": "Inventory",
+    "/customers": "Customers",
     "/suppliers": "Suppliers",
     "/orders": "Orders",
-    "/analytics": "Analytics",
+    "/sells": "Sells",
     "/settings": "Settings",
   };
 
@@ -52,9 +53,10 @@ export default function Welcome() {
           {[
             { to: "/dashboard", label: "Dashboard", icon: "dashboard" },
             { to: "/inventory", label: "Inventory", icon: "inventory" },
+            { to: "/customers", label: "Customers", icon: "people" },
             { to: "/suppliers", label: "Suppliers", icon: "local_shipping" },
             { to: "/orders", label: "Orders", icon: "shopping_cart" },
-            { to: "/analytics", label: "Analytics", icon: "bar_chart" },
+            { to: "/sells", label: "Sells", icon: "bar_chart" },
             { to: "/settings", label: "Settings", icon: "settings" },
           ].map(({ to, label, icon }) => (
             <NavLink

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import AddBrandModal from "../Components/AddBrandModal";
-
+import SaleModal from "../Components/SaleModal";
 import ShowMoreBrandModal from "../Components/ShowMoreBrandModal"; // New Component
 import { axiosClient } from "../Api/axiosClient";
 import EditProductModal from "../Components/EditProductModal";
@@ -13,7 +13,8 @@ const Inventory = () => {
   const [showBrandModal, setShowBrandModal] = useState(false);
   const [showBrandDetailsModal, setShowBrandDetailsModal] = useState(false); // Toggle for "Show More"
   const [loading, setLoading] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState([]);
+  const [showSaleModal, setShowSaleModal] = useState(false);
   const [currentStep, setCurrentStep] = useState(1); // Step for table pagination
   const itemsPerStep = 5; // Products per page
 
@@ -29,6 +30,12 @@ const Inventory = () => {
       console.log(response.data.Brands.data);
     } catch (error) {
       console.error("Error fetching brands:", error);
+    }
+  };
+
+  const handleOpenSaleModal = () => {
+    if (selectedProduct.length > 0) {
+      setShowSaleModal(true);
     }
   };
 
@@ -106,10 +113,17 @@ const Inventory = () => {
     }
   };
 
-  const handleSaleProduct = async () => {
-    
-  } 
+  const handleSelectProduct = (productId) => {
+    setSelectedProduct((prevSelected) => {
+      if (prevSelected.includes(productId)) {
+        return prevSelected.filter((id) => id !== productId); // Deselect the product
+      } else {
+        return [...prevSelected, productId]; // Select the product
+      }
+    });
+  };
 
+  
   const handleEditProduct = (product) => {
     setSelectedProduct(product);
     setShowProductModal(true);
@@ -167,6 +181,13 @@ const Inventory = () => {
       <main className="flex-1 bg-white rounded-3xl shadow-md p-6">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-2xl font-semibold text-gray-700">Product Inventory</h3>
+          <button
+            onClick={handleOpenSaleModal}
+            className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+            disabled={selectedProduct.length === 0}
+          >
+            Sell Selected
+          </button>
         </div>
   	    {error && <div className="text-red-500 mb-4">{error}</div>}
         {loading && <p className="text-gray-500">Processing...</p>}
@@ -177,7 +198,8 @@ const Inventory = () => {
             <table className="table-auto w-full border-collapse bg-gray-50 rounded-xl shadow-sm">
               <thead>
                 <tr className="text-left bg-gradient-to-r from-gray-200 via-gray-300 to-gray-400 text-gray-800 text-sm uppercase font-semibold">
-                  <th className="py-3 px-4 rounded-tl-xl">Product Id</th>
+                  <th className="py-3 px-4 rounded-tl-xl">Select</th>
+                  <th className="py-3 px-4">Product Id</th>
                   <th className="py-3 px-4">Product Name</th>
                   <th className="py-3 px-4">Price</th>
                   <th className="py-3 px-4">Stock</th>
@@ -191,6 +213,13 @@ const Inventory = () => {
                     key={order.id}
                     className="bg-white hover:bg-gray-100 transition border-t"
                   >
+                  <td className="py-3 px-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedProduct.includes(order.id)}
+                        onChange={() => handleSelectProduct(order.id)}
+                      />
+                    </td>
                   <td className="py-3 px-4">{order.id}</td>
                   <td className="py-3 px-4">{order.product_name}</td>
                   <td className="py-3 px-4">${order.price}</td>
@@ -208,12 +237,6 @@ const Inventory = () => {
                         onClick={() => handleDeleteProduct(order.id)}
                       >
                         Delete
-                      </button>
-                      <button
-                        className="bg-gradient-to-r from-green-400 to-green-600 text-white px-3 py-1 rounded-lg shadow-sm hover:shadow-md"
-                        onClick={() => handleSaleProduct(order.id)}
-                      >
-                        Sale
                       </button>
                     </td>
                   </tr>
@@ -267,6 +290,12 @@ const Inventory = () => {
         show={showBrandDetailsModal}
         brands={brands}
         handleClose={() => handleToggleModal("brandDetails", false)}
+      />
+      <SaleModal
+        show={showSaleModal}
+        handleClose={() => setShowSaleModal(false)}
+        selectedProducts={orders.filter((order) => selectedProduct.includes(order.id))}
+        fetchOrders={fetchOrders}
       />
     </div>
   );

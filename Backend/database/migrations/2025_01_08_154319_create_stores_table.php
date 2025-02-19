@@ -79,6 +79,28 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
         });
+
+        Schema::create('customers', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->string('phone_number');
+            $table->text('address')->nullable();
+            $table->foreignId('store_id')->constrained('stores')->cascadeOnDelete();
+            $table->timestamps();
+            $table->softDeletes();
+        });
+
+        Schema::create('sells', function (Blueprint $table) {
+            $table->id(); // Auto-increment ID
+            $table->foreignId('product_id')->constrained()->onDelete('cascade'); // Link to products
+            $table->foreignId('customer_id')->constrained()->onDelete('cascade'); // Link to customers
+            $table->foreignId('store_id')->constrained("stores")->cascadeOnDelete(); // Link to stores
+            $table->integer('quantity'); // Number of items sold
+            $table->decimal('total_price', 10, 2);
+            $table->string('status')->default('pending');
+            $table->timestamps(); // Created_at & Updated_at
+        });
     }
 
     /**
@@ -86,11 +108,13 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('stores');
+        Schema::dropIfExists('sells');
+        Schema::dropIfExists('customers');
         Schema::dropIfExists('orders');
         Schema::dropIfExists('products');
-        Schema::dropIfExists('brands');
         Schema::dropIfExists('suppliers');
         Schema::dropIfExists('supervisors');
+        Schema::dropIfExists('brands');
+        Schema::dropIfExists('stores');
     }
 };
