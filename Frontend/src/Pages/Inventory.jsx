@@ -1,29 +1,36 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useSelector } from "react-redux";
 import AddBrandModal from "../Components/AddBrandModal";
 import SaleModal from "../Components/SaleModal";
-import ShowMoreBrandModal from "../Components/ShowMoreBrandModal"; // New Component
-import { axiosClient } from "../Api/axiosClient";
+import ShowMoreBrandModal from "../Components/ShowMoreBrandModal";
 import EditProductModal from "../Components/EditProductModal";
+import { axiosClient } from "../Api/axiosClient";
+import "react-loading-skeleton/dist/skeleton.css";
 
 const Inventory = () => {
+  // Get dark mode flag from Redux store
+  const darkMode = useSelector((state) => state.theme.darkMode);
+
   const [showProductModal, setShowProductModal] = useState(false);
   const [brands, setBrands] = useState([]);
   const [orders, setOrders] = useState([]);
   const [error, setError] = useState(null);
   const [showBrandModal, setShowBrandModal] = useState(false);
-  const [showBrandDetailsModal, setShowBrandDetailsModal] = useState(false); // Toggle for "Show More"
+  const [showBrandDetailsModal, setShowBrandDetailsModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState([]);
+  const [selectedProducts, setSelectedProducts] = useState([]);
+  const [productToEdit, setProductToEdit] = useState(null);
   const [showSaleModal, setShowSaleModal] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1); // Step for table pagination
-  const itemsPerStep = 5; // Products per page
+  const [currentStep, setCurrentStep] = useState(1);
+  const itemsPerStep = 5;
 
+  // Fetch brands and products on mount
   useEffect(() => {
     fetchBrands();
     fetchOrders();
   }, []);
 
-  const fetchBrands = async () => {
+  const fetchBrands = useCallback(async () => {
     try {
       const response = await axiosClient.get("/brand/show");
       setBrands(response.data.Brands.data);
@@ -31,20 +38,30 @@ const Inventory = () => {
     } catch (error) {
       console.error("Error fetching brands:", error);
     }
-  };
+  }, []);
 
-  const handleOpenSaleModal = () => {
-    if (selectedProduct.length > 0) {
-      setShowSaleModal(true);
+  const fetchOrders = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await axiosClient.get("/product/show");
+      setOrders(response.data.data.data);
+      setError(null);
+      console.log(response.data.data.data);
+    } catch (error) {
+      setError("Error fetching orders. Please try again.");
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
 
+  // Modal toggle helper
   const handleToggleModal = (modalType, state) => {
     if (modalType === "product") setShowProductModal(state);
     if (modalType === "brand") setShowBrandModal(state);
     if (modalType === "brandDetails") setShowBrandDetailsModal(state);
   };
 
+  // Save or update a product
   const handleSaveProduct = async (productData) => {
     setLoading(true);
     try {
@@ -64,21 +81,8 @@ const Inventory = () => {
       setLoading(false);
     }
   };
-  
 
-  const fetchOrders = async () => {
-    setLoading(true);
-    try {
-      const response = await axiosClient.get("/product/show");
-      setOrders(response.data.data.data);
-      console.log(response.data.data.data);
-    } catch (error) {
-      setError("Error fetching orders. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Save new brand
   const handleSaveBrand = async (newBrand) => {
     setLoading(true);
     try {
@@ -101,6 +105,7 @@ const Inventory = () => {
     }
   };
 
+  // Delete a product after confirmation
   const handleDeleteProduct = async (productId) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
@@ -113,22 +118,29 @@ const Inventory = () => {
     }
   };
 
+  // Toggle product selection for sale
   const handleSelectProduct = (productId) => {
-    setSelectedProduct((prevSelected) => {
-      if (prevSelected.includes(productId)) {
-        return prevSelected.filter((id) => id !== productId); // Deselect the product
-      } else {
-        return [...prevSelected, productId]; // Select the product
-      }
-    });
+    setSelectedProducts((prev) =>
+      prev.includes(productId)
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId]
+    );
   };
 
-  
+  // Open product editor modal
   const handleEditProduct = (product) => {
-    setSelectedProduct(product);
+    setProductToEdit(product);
     setShowProductModal(true);
   };
 
+  // Open sale modal if at least one product is selected
+  const handleOpenSaleModal = () => {
+    if (selectedProducts.length > 0) {
+      setShowSaleModal(true);
+    }
+  };
+
+  // Pagination logic
   const currentOrders = orders.slice(
     (currentStep - 1) * itemsPerStep,
     currentStep * itemsPerStep
@@ -143,61 +155,83 @@ const Inventory = () => {
   };
 
   return (
-    <div className="p-6 bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300  flex flex-col lg:flex-row gap-6">
+    <div className="flex flex-col lg:flex-row gap-6 p-4 sm:p-6 md:p-8">
       {/* Sidebar for Brands */}
-      <aside className="bg-white rounded-3xl shadow-md p-6 lg:w-1/4">
-        <h3 className="text-xl font-semibold text-gray-700 mb-6">Brand Inventory</h3>
-        {Array.isArray(brands) && brands.length > 0 ? (
+      <aside
+        className={`rounded-3xl shadow-md p-6 lg:w-1/4 transition-colors duration-300 ${
+          darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-800"
+        }`}
+      >
+        <h3 className="text-xl font-bold mb-6">Brand Inventory</h3>
+        {brands.length > 0 ? (
           <ul className="space-y-4">
             {brands.slice(0, 4).map((brand) => (
               <li
                 key={brand.id}
-                className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow"
+                className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white p-4 rounded-xl shadow hover:shadow-lg transition-shadow"
               >
                 <div className="flex justify-between items-center">
-                  <span>{brand.name}</span>
+                  <span className="font-medium">{brand.name}</span>
                 </div>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-gray-500">No brands available.</p>
+          <p className="text-sm text-gray-500">No brands available.</p>
         )}
-        <button
-          className="mt-6 bg-gradient-to-r from-green-400 to-green-600 text-white w-full py-3 rounded-xl shadow-sm hover:shadow-md transition-shadow"
-          onClick={() => handleToggleModal("brandDetails", true)}
-        >
-          Show More
-        </button>
-        <button
-          className="mt-6 bg-gradient-to-r from-green-400 to-green-600 text-white w-full py-3 rounded-xl shadow-sm hover:shadow-md transition-shadow"
-          onClick={() => handleToggleModal("brand", true)}
-        >
-          + Add Brand
-        </button>
+        <div className="mt-6 space-y-3">
+          <button
+            className="w-full bg-gradient-to-r from-green-400 to-green-600 text-white py-3 rounded-xl shadow hover:shadow-lg transition-shadow"
+            onClick={() => handleToggleModal("brandDetails", true)}
+          >
+            Show More
+          </button>
+          <button
+            className="w-full bg-gradient-to-r from-green-400 to-green-600 text-white py-3 rounded-xl shadow hover:shadow-lg transition-shadow"
+            onClick={() => handleToggleModal("brand", true)}
+          >
+            + Add Brand
+          </button>
+        </div>
       </aside>
 
       {/* Main Section for Products */}
-      <main className="flex-1 bg-white rounded-3xl shadow-md p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-2xl font-semibold text-gray-700">Product Inventory</h3>
+      <main
+        className={`flex-1 rounded-3xl shadow-md p-6 transition-colors duration-300 ${
+          darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-800"
+        }`}
+      >
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
+          <h3 className="text-2xl font-bold mb-4 sm:mb-0">Product Inventory</h3>
           <button
             onClick={handleOpenSaleModal}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg"
-            disabled={selectedProduct.length === 0}
+            disabled={selectedProducts.length === 0}
+            className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
+              selectedProducts.length === 0
+                ? "bg-gray-300 cursor-not-allowed"
+                : "bg-blue-500 text-white hover:bg-blue-600"
+            }`}
           >
             Sell Selected
           </button>
         </div>
-  	    {error && <div className="text-red-500 mb-4">{error}</div>}
+        {error && <div className="text-red-500 mb-4">{error}</div>}
         {loading && <p className="text-gray-500">Processing...</p>}
 
         {/* Products Table */}
         <div className="overflow-x-auto">
-          {Array.isArray(currentOrders) && currentOrders.length > 0 ? (
-            <table className="table-auto w-full border-collapse bg-gray-50 rounded-xl shadow-sm">
+          {currentOrders.length > 0 ? (
+            <table
+              className={`w-full border-collapse rounded-xl shadow transition-colors duration-300 ${
+                darkMode ? "bg-gray-700 text-white" : "bg-gray-50 text-gray-800"
+              }`}
+            >
               <thead>
-                <tr className="text-left bg-gradient-to-r from-gray-200 via-gray-300 to-gray-400 text-gray-800 text-sm uppercase font-semibold">
+                <tr className={`text-left text-sm uppercase font-semibold ${
+                  darkMode
+                    ? "bg-gray-600 text-white"
+                    : "bg-gradient-to-r from-gray-200 via-gray-300 to-gray-400 text-gray-800"
+                }`}>
                   <th className="py-3 px-4 rounded-tl-xl">Select</th>
                   <th className="py-3 px-4">Product Id</th>
                   <th className="py-3 px-4">Product Name</th>
@@ -211,29 +245,34 @@ const Inventory = () => {
                 {currentOrders.map((order) => (
                   <tr
                     key={order.id}
-                    className="bg-white hover:bg-gray-100 transition border-t"
+                    className={`transition border-t ${
+                      darkMode
+                        ? "bg-gray-800 hover:bg-gray-700 border-gray-600"
+                        : "bg-white hover:bg-gray-100"
+                    }`}
                   >
-                  <td className="py-3 px-4">
+                    <td className="py-3 px-4">
                       <input
                         type="checkbox"
-                        checked={selectedProduct.includes(order.id)}
+                        checked={selectedProducts.includes(order.id)}
                         onChange={() => handleSelectProduct(order.id)}
+                        className="h-4 w-4 text-blue-600"
                       />
                     </td>
-                  <td className="py-3 px-4">{order.id}</td>
-                  <td className="py-3 px-4">{order.product_name}</td>
-                  <td className="py-3 px-4">${order.price}</td>
-                  <td className="py-3 px-4">{order.quantity}</td>
-                  <td className="py-3 px-4">{order.brand.name || "no brand"}</td>
+                    <td className="py-3 px-4">{order.id}</td>
+                    <td className="py-3 px-4">{order.product_name}</td>
+                    <td className="py-3 px-4">${order.price}</td>
+                    <td className="py-3 px-4">{order.quantity}</td>
+                    <td className="py-3 px-4">{order.brand.name || "No Brand"}</td>
                     <td className="py-3 px-4 space-x-2">
                       <button
-                        className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white px-3 py-1 rounded-lg shadow-sm hover:shadow-md"
+                        className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white px-3 py-1 rounded-lg shadow hover:shadow-md transition-colors duration-200"
                         onClick={() => handleEditProduct(order)}
                       >
                         Edit
                       </button>
                       <button
-                        className="bg-gradient-to-r from-red-400 to-red-600 text-white px-3 py-1 rounded-lg shadow-sm hover:shadow-md"
+                        className="bg-gradient-to-r from-red-400 to-red-600 text-white px-3 py-1 rounded-lg shadow hover:shadow-md transition-colors duration-200"
                         onClick={() => handleDeleteProduct(order.id)}
                       >
                         Delete
@@ -252,20 +291,26 @@ const Inventory = () => {
         <div className="flex justify-between items-center mt-6">
           <button
             disabled={currentStep === 1}
-            className={`px-4 py-2 rounded ${
-              currentStep === 1 ? "bg-gray-300" : "bg-blue-500 text-white"
+            className={`px-4 py-2 rounded transition-colors duration-200 ${
+              currentStep === 1
+                ? darkMode
+                  ? "bg-gray-600 cursor-not-allowed"
+                  : "bg-gray-300 cursor-not-allowed"
+                : "bg-blue-500 text-white hover:bg-blue-600"
             }`}
             onClick={handlePreviousStep}
           >
             Previous
           </button>
-          <span>Step {currentStep}</span>
+          <span className="font-medium">Step {currentStep}</span>
           <button
             disabled={currentStep * itemsPerStep >= orders.length}
-            className={`px-4 py-2 rounded ${
+            className={`px-4 py-2 rounded transition-colors duration-200 ${
               currentStep * itemsPerStep >= orders.length
-                ? "bg-gray-300"
-                : "bg-blue-500 text-white"
+                ? darkMode
+                  ? "bg-gray-600 cursor-not-allowed"
+                  : "bg-gray-300 cursor-not-allowed"
+                : "bg-blue-500 text-white hover:bg-blue-600"
             }`}
             onClick={handleNextStep}
           >
@@ -274,13 +319,16 @@ const Inventory = () => {
         </div>
       </main>
 
+      {/* Modals */}
       <EditProductModal
-      show={showProductModal}
-      handleClose={() => handleToggleModal("product", false)}
-      handleSave={handleSaveProduct}
-      product={selectedProduct}
+        show={showProductModal}
+        handleClose={() => {
+          setShowProductModal(false);
+          setProductToEdit(null);
+        }}
+        handleSave={handleSaveProduct}
+        product={productToEdit}
       />
-
       <AddBrandModal
         show={showBrandModal}
         handleClose={() => handleToggleModal("brand", false)}
@@ -294,7 +342,9 @@ const Inventory = () => {
       <SaleModal
         show={showSaleModal}
         handleClose={() => setShowSaleModal(false)}
-        selectedProducts={orders.filter((order) => selectedProduct.includes(order.id))}
+        selectedProducts={orders.filter((order) =>
+          selectedProducts.includes(order.id)
+        )}
         fetchOrders={fetchOrders}
       />
     </div>

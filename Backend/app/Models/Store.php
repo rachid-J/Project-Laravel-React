@@ -14,10 +14,8 @@ use App\Models\Order;
 use App\Models\Product;
 
 class Store extends Authenticatable implements JWTSubject
-
 {
     use HasFactory, Notifiable;
-    protected $table = "stores"; 
 
     protected $fillable = [
         'name',
@@ -35,39 +33,44 @@ class Store extends Authenticatable implements JWTSubject
         'password',
         'remember_token', 
     ];
+
     public function getJWTIdentifier()
     {
         return $this->getKey();
     }
 
-    /**
-     * Return a key-value array of any custom claims to be added to the JWT.
-     */
     public function getJWTCustomClaims()
     {
         return [];
     }
 
-    public function supervisors(){
+    public function supervisors()
+    {
         return $this->hasMany(SuperVisor::class);
     }
 
-    public function suppliers(){
+    public function suppliers()
+    {
         return $this->hasMany(Supplier::class);
     }
 
-    public function brands(){
+    public function brands()
+    {
         return $this->hasMany(Brand::class);
     }
 
-    public function orders(){
+    public function orders()
+    {
         return $this->hasMany(Order::class);
     }
     
-    public function product(){
+    public function product()
+    {
         return $this->hasMany(Product::class);
     }
-    public function sell(){
+
+    public function sell()
+    {
         return $this->hasMany(Sell::class);
     }
 }

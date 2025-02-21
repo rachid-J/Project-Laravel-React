@@ -22,6 +22,8 @@ export const LOGIN_ROUTE = "/login";
 export const SIGN_UP_ROUTE = "/sign_up";
 
 const Router = () => {
+
+
   const token = useSelector((state) => state.auth.token);
 
   // Helper functions to define routes

@@ -1,16 +1,20 @@
 import { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { axiosClient } from "../Api/axiosClient";
 import EditCustomerModal from '../Components/EditCustomerModal';
+import { FiPlus, FiEdit, FiTrash2, FiX } from 'react-icons/fi';
+import Spinner from '../Components/Spinner';
 
 export default function Customers() {
+  const darkMode = useSelector((state) => state.theme.darkMode);
   const [customers, setCustomers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCustomer, setNewCustomer] = useState({ name: '', email: '', phone_number: '', address: '' });
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [status ,sestatus] = useState('');
 
-  // Fetch customers from API
   useEffect(() => {
     fetchCustomers();
   }, []);
@@ -19,25 +23,20 @@ export default function Customers() {
     try {
       const response = await axiosClient.get('/customer/show');
       setCustomers(response.data.data);
-      console.log('Customers:', response.data);
     } catch (error) {
       console.error('Error fetching customers:', error);
     }
   };
 
-  // Handle adding new customer
   const handleAddCustomer = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       const response = await axiosClient.post('/customer/store', newCustomer);
-      console.log(response);
       if (response.status === 201) {
         setNewCustomer({ name: '', email: '', phone_number: '', address: '' });
-        fetchCustomers(); 
+        fetchCustomers();
         setIsModalOpen(false);
-      } else {
-        console.error('Failed to add customer');
       }
     } catch (error) {
       console.error('Error adding customer:', error);
@@ -46,17 +45,12 @@ export default function Customers() {
     }
   };
 
-  // Handle deleting customer
   const handleDeleteCustomer = async (id) => {
     if (!window.confirm("Are you sure you want to delete this customer?")) return;
     setLoading(true);
     try {
-      const response = await axiosClient.delete(`/customer/destroy/${id}`);
-      if (response.status === 200) {
-        setCustomers(customers.filter((customer) => customer.id !== id));
-      } else {
-        console.error('Failed to delete customer');
-      }
+      await axiosClient.delete(`/customer/destroy/${id}`);
+      setCustomers(customers.filter((customer) => customer.id !== id));
     } catch (error) {
       console.error('Error deleting customer:', error);
     } finally {
@@ -64,7 +58,6 @@ export default function Customers() {
     }
   };
 
-  // Handle editing customer
   const handleEditCustomer = (id) => {
     const customer = customers.find((customer) => customer.id === id);
     setSelectedCustomer(customer);
@@ -74,168 +67,186 @@ export default function Customers() {
   const handleSaveCustomer = async (updatedCustomer) => {
     setLoading(true);
     try {
-      const response = await axiosClient.put(`/customer/update/${selectedCustomer.id}`, updatedCustomer);
-      if (response.status === 200 && response.data) {
-        alert("Customer updated successfully");
-        fetchCustomers();
-        setIsEditModalOpen(false);
-      } else {
-        console.error("Failed to update customer");
-        alert("Failed to update customer. Please try again.");
-      }
+    const response =  await axiosClient.put(`/customer/update/${selectedCustomer.id}`, updatedCustomer);
+    if(response.status === 200){
+      sestatus('success');
+    }
+    
+      
+      fetchCustomers();
+      setIsEditModalOpen(false);
     } catch (error) {
       console.error("Error saving customer:", error);
-      alert("Failed to save customer. Please try again.");
+      sestatus('error');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="p-6 bg-gray-50">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">Customers</h1>
-      {loading && <div>Loading...</div>}
-      <button
-        onClick={() => setIsModalOpen(true)}
-        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
-      >
-        Add Customer
-      </button>
+   
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-8">
+          <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+            Customers
+          </h1>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg transition-all ${
+              darkMode 
+                ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+            }`}
+          >
+            <FiPlus className="text-lg" />
+            Add Customer
+          </button>
+        </div>
 
-      <div className="overflow-x-auto mt-6">
-        {customers.length > 0 ?(
-        <table className="min-w-full bg-white shadow-md rounded-lg border border-gray-200">
-          <thead>
-            <tr className="bg-gray-200 text-gray-700 text-left">
-              <th className="py-3 px-4">ID</th>
-              <th className="py-3 px-4">Name</th>
-              <th className="py-3 px-4">Email</th>
-              <th className="py-3 px-4">Phone Number</th>
-              <th className="py-3 px-4">Address</th>
-              <th className="py-3 px-4">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {customers.map((customer) => (
-              <tr key={customer.id} className="border-t">
-                <td className="py-3 px-4">{customer.id}</td>
-                <td className="py-3 px-4">{customer.name}</td>
-                <td className="py-3 px-4">{customer.email}</td>
-                <td className="py-3 px-4">{customer.phone_number}</td>
-                <td className="py-3 px-4">{customer.address}</td>
-                <td className="py-3 px-4 space-x-2">
-                  <button
-                    onClick={() => handleEditCustomer(customer.id)}
-                    className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition"
+        {loading && <Spinner />}
+
+        <div className="rounded-xl overflow-hidden shadow-lg">
+          <table className={`w-full ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
+            <thead className={`${darkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
+              <tr>
+                {['ID', 'Name', 'Email', 'Phone', 'Address', 'Actions'].map((header) => (
+                  <th
+                    key={header}
+                    className={`px-6 py-4 text-left text-sm font-semibold ${
+                      darkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}
                   >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDeleteCustomer(customer.id)}
-                    className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition"
-                  >
-                    Delete
-                  </button>
-                </td>
+                    {header}
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-        ): (
-          <p className="text-gray-500 text-center">No customers available.</p>
+            </thead>
+            <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
+              {customers.map((customer) => (
+                <tr
+                  key={customer.id}
+                  className={`transition-colors hover:${darkMode ? 'bg-gray-800' : 'bg-gray-50'}`}
+                >
+                  <td className={`px-6 py-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {customer.id}
+                  </td>
+                  <td className={`px-6 py-4 font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    {customer.name}
+                  </td>
+                  <td className={`px-6 py-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {customer.email}
+                  </td>
+                  <td className={`px-6 py-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {customer.phone_number}
+                  </td>
+                  <td className={`px-6 py-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {customer.address}
+                  </td>
+                  <td className="px-6 py-4 flex gap-3">
+                    <button
+                      onClick={() => handleEditCustomer(customer.id)}
+                      className="p-2 rounded-lg text-indigo-600 hover:bg-indigo-50 transition-colors"
+                    >
+                      <FiEdit className="text-xl" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteCustomer(customer.id)}
+                      className="p-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <FiTrash2 className="text-xl" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          
+          {customers.length === 0 && (
+            <div className={`p-8 text-center ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+              <p className={`${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                No customers found. Start by adding a new customer.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Add Customer Modal */}
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className={`w-full max-w-md rounded-2xl p-6 ${
+              darkMode ? 'bg-gray-800' : 'bg-white'
+            }`}>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  New Customer
+                </h2>
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className={`p-2 rounded-full hover:bg-gray-100 ${
+                    darkMode ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500'
+                  }`}
+                >
+                  <FiX className="text-xl" />
+                </button>
+              </div>
+
+              <form onSubmit={handleAddCustomer} className="space-y-4">
+                {['name', 'email', 'phone_number', 'address'].map((field) => (
+                  <div key={field}>
+                    <label className={`block text-sm font-medium mb-2 ${
+                      darkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
+                      {field.replace('_', ' ').toUpperCase()}
+                    </label>
+                    <input
+                      type={field === 'email' ? 'email' : 'text'}
+                      value={newCustomer[field]}
+                      onChange={(e) => setNewCustomer({ ...newCustomer, [field]: e.target.value })}
+                      className={`w-full px-4 py-2 rounded-lg border ${
+                        darkMode
+                          ? 'bg-gray-700 border-gray-600 text-white focus:ring-indigo-500 focus:border-indigo-500'
+                          : 'border-gray-300 focus:ring-indigo-500 focus:border-indigo-500'
+                      }`}
+                      required
+                    />
+                  </div>
+                ))}
+
+                <div className="flex justify-end gap-3 mt-6">
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    className={`px-4 py-2 rounded-lg ${
+                      darkMode
+                        ? 'text-gray-300 hover:bg-gray-700'
+                        : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2"
+                    disabled={loading}
+                  >
+                    {loading ? <Spinner size="small" /> : <FiPlus />}
+                    Add Customer
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         )}
+
         <EditCustomerModal
           show={isEditModalOpen}
           handleClose={() => setIsEditModalOpen(false)}
           customer={selectedCustomer}
           handleSave={handleSaveCustomer}
+          darkMode={darkMode}
+          status={status}
         />
       </div>
-
-      {/* Modal for adding new customer */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center">
-          <div className="bg-white w-full max-w-md rounded-lg shadow-lg p-6 relative">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">Add New Customer</h2>
-            <form onSubmit={handleAddCustomer}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="customer-name">
-                  Name
-                </label>
-                <input
-                  id="customer-name"
-                  type="text"
-                  value={newCustomer.name}
-                  onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg p-2"
-                  placeholder="Customer Name"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="customer-email">
-                  Email
-                </label>
-                <input
-                  id="customer-email"
-                  type="email"
-                  value={newCustomer.email}
-                  onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg p-2"
-                  placeholder="Email"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="customer-phone">
-                  Phone Number
-                </label>
-                <input
-                  id="customer-phone"
-                  type="text"
-                  value={newCustomer.phone_number}
-                  onChange={(e) => setNewCustomer({ ...newCustomer, phone_number: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg p-2"
-                  placeholder="Phone Number"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="customer-address">
-                  Address
-                </label>
-                <input
-                  id="customer-address"
-                  type="text"
-                  value={newCustomer.address}
-                  onChange={(e) => setNewCustomer({ ...newCustomer, address: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg p-2"
-                  placeholder="Address"
-                />
-              </div>
-              <div className="flex justify-end space-x-4">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-md text-gray-600 border border-gray-300 hover:bg-gray-100"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className={`px-4 py-2 text-white rounded-md transition ${loading ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'}`}
-                  disabled={loading}
-                >
-                  {loading ? 'Adding...' : 'Add'}
-                </button>
-              </div>
-            </form>
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
+  
   );
 }

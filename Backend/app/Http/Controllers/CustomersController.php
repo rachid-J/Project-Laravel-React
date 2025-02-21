@@ -59,7 +59,7 @@ class CustomersController extends Controller
         $request->validate([
             'name' => 'string|max:255',
             'email' => 'email|unique:customers,email,' . $id,
-            'phone_number' => 'string|max:15',
+            'phone_number' => 'string|max:15|min:10',
             'address' => 'string',
         ]);
 

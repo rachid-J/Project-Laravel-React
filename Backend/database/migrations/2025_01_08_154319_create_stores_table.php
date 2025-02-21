@@ -32,16 +32,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
         });
-        Schema::create('supervisors', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->string('password');
-            $table->string('role');
-            $table->foreignId('store_id')->constrained('stores')->cascadeOnDelete();
-            $table->timestamps();
-            $table->softDeletes();
-        });
+  
         Schema::create('suppliers', function (Blueprint $table) {
             $table->id();
             $table->string('name');
@@ -113,7 +104,6 @@ return new class extends Migration
         Schema::dropIfExists('orders');
         Schema::dropIfExists('products');
         Schema::dropIfExists('suppliers');
-        Schema::dropIfExists('supervisors');
         Schema::dropIfExists('brands');
         Schema::dropIfExists('stores');
     }

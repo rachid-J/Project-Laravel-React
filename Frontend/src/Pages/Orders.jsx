@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { axiosClient } from "../Api/axiosClient";
 
 export default function Orders() {
+  const darkMode = useSelector((state) => state.theme.darkMode);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -13,7 +15,7 @@ export default function Orders() {
   useEffect(() => {
     fetchOrders();
   }, []);
-
+  
   const fetchOrders = async () => {
     setLoading(true);
     try {
@@ -47,7 +49,10 @@ export default function Orders() {
             console.log(`Response for order ${orderId}:`, response);
             return response;
           } catch (err) {
-            console.error(`Error for order ${orderId}:`, err.response?.data || err.message);
+            console.error(
+              `Error for order ${orderId}:`,
+              err.response?.data || err.message
+            );
             throw err;
           }
         })
@@ -55,20 +60,23 @@ export default function Orders() {
   
       setOrders((prevOrders) =>
         prevOrders.map((order) =>
-          selectedOrders.includes(order.id) ? { ...order, status: "Paid" } : order
+          selectedOrders.includes(order.id)
+            ? { ...order, status: "Paid" }
+            : order
         )
       );
   
       setSelectedOrders([]);
     } catch (error) {
       console.error("Batch payment error:", error);
-      setError(error.response?.data?.message || "Failed to pay for selected orders.");
+      setError(
+        error.response?.data?.message || "Failed to pay for selected orders."
+      );
     } finally {
       setLoading(false);
     }
   };
   
-
   const handleBatchCancel = async () => {
     setLoading(true);
     try {
@@ -111,16 +119,22 @@ export default function Orders() {
           </tr>`
       )
       .join("");
-
+  
     const printWindow = window.open("", "_blank");
     printWindow.document.write(`
       <html>
         <head>
           <title>Print Orders</title>
+          <style>
+            body { font-family: Arial, sans-serif; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #000; padding: 8px; text-align: left; }
+            th { background: #f4f4f4; }
+          </style>
         </head>
         <body>
           <h1>Selected Orders</h1>
-          <table border="1" style="width:100%; border-collapse: collapse;">
+          <table>
             <thead>
               <tr>
                 <th>Order ID</th>
@@ -142,10 +156,9 @@ export default function Orders() {
     printWindow.print();
   };
 
-  // Handle pagination logic
+  // Pagination logic
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentOrders = orders.slice(startIndex, startIndex + itemsPerPage);
-
   const totalPages = Math.ceil(orders.length / itemsPerPage);
 
   const handleNextPage = () => {
@@ -157,7 +170,11 @@ export default function Orders() {
   };
 
   return (
-    <div className="p-6 bg-gray-50">
+    <div
+      className={`p-6 transition-colors duration-300 ${
+        darkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-800"
+      }`}
+    >
       <h1 className="text-3xl font-bold mb-6">Orders</h1>
       {error && <div className="text-red-500 mb-4">{error}</div>}
       {loading && <div className="text-gray-500 mb-4">Loading...</div>}
@@ -188,9 +205,17 @@ export default function Orders() {
 
       <div className="space-y-6">
         <div className="overflow-x-auto">
-          <table className="min-w-full bg-white shadow-md rounded-lg">
+          <table
+            className={`min-w-full shadow-md rounded-lg transition-colors duration-300 ${
+              darkMode ? "bg-gray-800" : "bg-white"
+            }`}
+          >
             <thead>
-              <tr className="bg-gray-200">
+              <tr
+                className={`${
+                  darkMode ? "bg-gray-700" : "bg-gray-200"
+                } text-left text-sm uppercase font-semibold`}
+              >
                 <th className="py-3 px-4">Select</th>
                 <th className="py-3 px-4">Order ID</th>
                 <th className="py-3 px-4">Product Name</th>
@@ -204,7 +229,12 @@ export default function Orders() {
             </thead>
             <tbody>
               {currentOrders.map((order) => (
-                <tr key={order.id} className="border-t">
+                <tr
+                  key={order.id}
+                  className={`border-t transition-colors duration-300 ${
+                    darkMode ? "border-gray-700" : "border-gray-200"
+                  }`}
+                >
                   <td className="py-3 px-4">
                     <input
                       type="checkbox"
@@ -231,7 +261,9 @@ export default function Orders() {
       <div className="flex justify-between items-center mt-6">
         <button
           onClick={handlePreviousPage}
-          className={`px-4 py-2 rounded ${currentPage === 1 ? "bg-gray-300" : "bg-blue-500 text-white"}`}
+          className={`px-4 py-2 rounded ${
+            currentPage === 1 ? "bg-gray-300" : "bg-blue-500 text-white"
+          }`}
           disabled={currentPage === 1}
         >
           Previous
@@ -241,7 +273,9 @@ export default function Orders() {
         </span>
         <button
           onClick={handleNextPage}
-          className={`px-4 py-2 rounded ${currentPage === totalPages ? "bg-gray-300" : "bg-blue-500 text-white"}`}
+          className={`px-4 py-2 rounded ${
+            currentPage === totalPages ? "bg-gray-300" : "bg-blue-500 text-white"
+          }`}
           disabled={currentPage === totalPages}
         >
           Next

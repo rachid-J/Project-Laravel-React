@@ -8,6 +8,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CustomersController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SupplierController;
 
 // Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
@@ -17,9 +18,13 @@ use App\Http\Controllers\SupplierController;
 Route::prefix("store")->group(function ($route) {
     Route::post("/create",[StoreController::class,"create"]);
     Route::post("/login",[StoreController::class,"login"]);
+   
 });
 Route::middleware('auth:store')->prefix('store')->group(function(){
+    Route::post("/update/{id}",[StoreController::class,"update"]);
     Route::post('/logout', [StoreController::class, 'logout']);
+    Route::get("/index",[StoreController::class,"index"]);
+  
 });
 
 
@@ -75,3 +80,8 @@ Route::middleware("auth:store")->prefix("dashboard")->group(function(){
 
 
 
+Route::middleware('auth:store')->prefix('notifications')->group(function () {
+    Route::get('/', [NotificationController::class, 'index']);
+    Route::patch('/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::delete('/{id}', [NotificationController::class, 'destroy']);
+});
