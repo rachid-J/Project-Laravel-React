@@ -47,7 +47,7 @@ class BrandController extends Controller
     {
         try {
            if( $store = auth('store')->user()) {
-                $brands = Brand::where('store_id', $store->id)->paginate(10); // Fetch all brands
+                $brands = Brand::where('store_id', $store->id)->with("product")->paginate(10); // Fetch all brands
                 return response()->json(["Brands" =>$brands], 200);
            };
         } catch (\Exception $e) {

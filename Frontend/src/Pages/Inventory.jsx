@@ -7,6 +7,8 @@ import EditProductModal from "../Components/EditProductModal";
 import { axiosClient } from "../Api/axiosClient";
 import "react-loading-skeleton/dist/skeleton.css";
 
+
+
 const Inventory = () => {
   // Get dark mode flag from Redux store
   const darkMode = useSelector((state) => state.theme.darkMode);
@@ -23,12 +25,15 @@ const Inventory = () => {
   const [showSaleModal, setShowSaleModal] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const itemsPerStep = 5;
-
+  const [selectedBrand, setSelectedBrand] = useState('');
   // Fetch brands and products on mount
   useEffect(() => {
     fetchBrands();
     fetchOrders();
   }, []);
+  useEffect(() => {
+    setCurrentStep(1);
+  }, [selectedBrand]);
 
   const fetchBrands = useCallback(async () => {
     try {
@@ -39,6 +44,12 @@ const Inventory = () => {
       console.error("Error fetching brands:", error);
     }
   }, []);
+
+  const filteredOrders = selectedBrand
+  ? orders.filter(order => order.brand?.id == selectedBrand)
+  : orders;
+
+
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
@@ -141,7 +152,7 @@ const Inventory = () => {
   };
 
   // Pagination logic
-  const currentOrders = orders.slice(
+  const currentOrders = filteredOrders.slice(
     (currentStep - 1) * itemsPerStep,
     currentStep * itemsPerStep
   );
@@ -194,6 +205,7 @@ const Inventory = () => {
           </button>
         </div>
       </aside>
+      
 
       {/* Main Section for Products */}
       <main
@@ -201,20 +213,38 @@ const Inventory = () => {
           darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-800"
         }`}
       >
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
-          <h3 className="text-2xl font-bold mb-4 sm:mb-0">Product Inventory</h3>
-          <button
-            onClick={handleOpenSaleModal}
-            disabled={selectedProducts.length === 0}
-            className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
-              selectedProducts.length === 0
-                ? "bg-gray-300 cursor-not-allowed"
-                : "bg-blue-500 text-white hover:bg-blue-600"
-            }`}
-          >
-            Sell Selected
-          </button>
-        </div>
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+  <h3 className="text-2xl font-bold">Product Inventory</h3>
+  <div className="flex items-center gap-4">
+    <select
+      value={selectedBrand}
+      onChange={(e) => setSelectedBrand(e.target.value)}
+      className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
+        darkMode 
+          ? "bg-gray-700 text-white border-gray-600" 
+          : "bg-white text-gray-800 border-gray-300"
+      } border focus:outline-none focus:ring-2 focus:ring-blue-500`}
+    >
+      <option value="">All Brands</option>
+      {brands.map((brand) => (
+        <option key={brand.id} value={brand.id}>
+          {brand.name}
+        </option>
+      ))}
+    </select>
+    <button
+      onClick={handleOpenSaleModal}
+      disabled={selectedProducts.length === 0}
+      className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
+        selectedProducts.length === 0
+          ? "bg-gray-300 cursor-not-allowed"
+          : "bg-blue-500 text-white hover:bg-blue-600"
+      }`}
+    >
+      Sell Selected
+    </button>
+  </div>
+</div>
         {error && <div className="text-red-500 mb-4">{error}</div>}
         {loading && <p className="text-gray-500">Processing...</p>}
 
@@ -304,7 +334,7 @@ const Inventory = () => {
           </button>
           <span className="font-medium">Step {currentStep}</span>
           <button
-            disabled={currentStep * itemsPerStep >= orders.length}
+            disabled={currentStep * itemsPerStep >= filteredOrders.length}
             className={`px-4 py-2 rounded transition-colors duration-200 ${
               currentStep * itemsPerStep >= orders.length
                 ? darkMode
