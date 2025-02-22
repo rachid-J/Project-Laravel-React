@@ -124,7 +124,7 @@ export default function Dashboard() {
                 <YAxis stroke={darkMode ? '#94a3b8' : '#64748b'} />
                 <Tooltip content={<CustomTooltip />} />
                 <Line type="monotone" dataKey="Sold" stroke="#3b82f6" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="returned" stroke="#ef4444" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="Returned" stroke="#ef4444" strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </ChartCard>
