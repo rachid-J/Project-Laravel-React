@@ -11,7 +11,7 @@ export default function Suppliers() {
   const [hasProduct, setHasProduct] = useState(null);
   const [suppliers, setSuppliers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newSupplier, setNewSupplier] = useState({ name: '', email: '', phone_number: '', address: '' });
+  const [newSupplier, setNewSupplier] = useState({ name: '', email: '', phone_number: '', address: '', brand_id: '' });
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState(null);
   const [newOrder, setNewOrder] = useState({  
@@ -22,6 +22,7 @@ export default function Suppliers() {
     product_id: "",
     price: null,
     quantity: "",
+    brand_id: "" // Pour filtrer les produits par marque
   });
   const [ProductSelected, setProductSelected] = useState({});
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
@@ -33,25 +34,42 @@ export default function Suppliers() {
     fetchBrands();
   }, []);
 
+  // Si besoin de recharger les produits, par exemple lors de l'ouverture de la modale
   useEffect(() => {
     if (isProductModalOpen) {
       fetchProducts();
     }
   }, [isProductModalOpen]);
 
+  // On récupère les marques et on aplatit les produits en y ajoutant le champ brand_id
+  const fetchBrands = async () => {
+    try {
+      const response = await axiosClient.get("/brand/show");
+      setBrands(response.data.Brands.data);
+      const allProducts = response.data.Brands.data.flatMap(brand =>
+        brand.product.map(product => ({ ...product, brand_id: brand.id }))
+      );
+      setProducts(allProducts);
+      console.log("Brands et produits :", response.data.Brands.data);
+    } catch (error) {
+      console.error("Error fetching brands:", error);
+    }
+  };
+
+  // Si vous devez recharger les produits (ex. depuis un endpoint différent)
   const fetchProducts = async () => {
     try {
-      const response = await axiosClient.get("/product/show");
-      setProducts(response.data.data.data);
-      console.log(response.data.data);
+      const response = await axiosClient.get("/brand/show");
+      const allProducts = response.data.Brands.data.flatMap(brand =>
+        brand.product.map(product => ({ ...product, brand_id: brand.id }))
+      );
+      setProducts(allProducts);
+      console.log("Products fetched:", allProducts);
     } catch (error) {
       console.error("Error fetching products:", error);
     }
   };
 
-  const toggleProductModal = () => setIsProductModalOpen(!isProductModalOpen);
-
-  // Fetch suppliers from API
   const fetchSuppliers = async () => {
     try {
       const response = await axiosClient.get('/supplier/show');
@@ -62,19 +80,17 @@ export default function Suppliers() {
     }
   };
 
-  const fetchBrands = async () => {
-    try {
-      const response = await axiosClient.get("/brand/show");
-      setBrands(response.data.Brands.data);
-    } catch (error) {
-      console.error("Error fetching brands:", error);
-    }
-  };
-
+  const toggleProductModal = () => setIsProductModalOpen(!isProductModalOpen);
   const toggleOrderModal = () => setIsOrderModalOpen(!isOrderModalOpen);
   const toggleModal = () => setIsModalOpen(!isModalOpen);
+  const toggleChoiceModal = () => setIsChoiceModalOpen(!isChoiceModalOpen);
 
-  // Handle adding new supplier
+  const handleChoice = (choice) => {
+    setHasProduct(choice);
+    toggleChoiceModal();
+  };
+
+  // Ajout d'un fournisseur
   const handleAddSupplier = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -94,11 +110,12 @@ export default function Suppliers() {
     }
   };
 
-  // Handle creating order
+  // Création d'une commande
   const handleCreateOrder = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
+      // Si le prix n'est pas renseigné, on prend celui du produit sélectionné
       if (newOrder.price === null) {
         newOrder.price = ProductSelected.price;
       }
@@ -106,7 +123,7 @@ export default function Suppliers() {
       console.log('Order created:', response.data);
       if (response.status === 201) {
         alert('Order created successfully');
-        setNewOrder({ brand_name: "", product_id: '', product_name: '', suppliers_id: '', store_id: '', price: '', quantity: 1 });
+        setNewOrder({ brand_name: "", product_id: '', product_name: '', suppliers_id: '', store_id: '', price: '', quantity: 1, brand_id: "" });
         toggleOrderModal();
         toggleProductModal();
       } else {
@@ -119,7 +136,7 @@ export default function Suppliers() {
     }
   };
 
-  // Handle deleting supplier
+  // Suppression d'un fournisseur
   const handleDeleteSupplier = async (id) => {
     if (!window.confirm("Are you sure you want to delete this supplier?")) return;
     setLoading(true);
@@ -137,7 +154,7 @@ export default function Suppliers() {
     }
   };
 
-  // Handle editing supplier
+  // Édition d'un fournisseur
   const handleEditSupplier = (id) => {
     const supplier = suppliers.find((supplier) => supplier.id === id);
     setSelectedSupplier(supplier);
@@ -168,13 +185,6 @@ export default function Suppliers() {
     }
   };
 
-  const toggleChoiceModal = () => setIsChoiceModalOpen(!isChoiceModalOpen);
-
-  const handleChoice = (choice) => {
-    setHasProduct(choice);
-    toggleChoiceModal();
-  };
-
   return (
     <div className={`p-6 transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <h1 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Suppliers</h1>
@@ -187,15 +197,9 @@ export default function Suppliers() {
       </button>
 
       <div className="overflow-x-auto mt-6">
-        <table
-          className={`min-w-full shadow-md rounded-lg border transition-colors duration-300 ${
-            darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-800'
-          }`}
-        >
+        <table className={`min-w-full shadow-md rounded-lg border transition-colors duration-300 ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-800'}`}>
           <thead>
-            <tr className={`text-left text-sm uppercase font-semibold transition-colors duration-300 ${
-              darkMode ? 'bg-gray-700 text-white' : 'bg-gray-200 text-gray-700'
-            }`}>
+            <tr className={`text-left text-sm uppercase font-semibold transition-colors duration-300 ${darkMode ? 'bg-gray-700 text-white' : 'bg-gray-200 text-gray-700'}`}>
               <th className="py-3 px-4">ID</th>
               <th className="py-3 px-4">Name</th>
               <th className="py-3 px-4">Email</th>
@@ -209,9 +213,7 @@ export default function Suppliers() {
             {suppliers.map((supplier) => (
               <tr
                 key={supplier.id}
-                className={`border-t transition-colors duration-300 ${
-                  darkMode ? 'bg-gray-800 hover:bg-gray-700 border-gray-600' : 'bg-white hover:bg-gray-100'
-                }`}
+                className={`border-t transition-colors duration-300 ${darkMode ? 'bg-gray-800 hover:bg-gray-700 border-gray-600' : 'bg-white hover:bg-gray-100'}`}
               >
                 <td className="py-3 px-4">{supplier.id}</td>
                 <td className="py-3 px-4">{supplier.name}</td>
@@ -224,11 +226,13 @@ export default function Suppliers() {
                 <td className="py-3 px-4 space-x-2">
                   <button
                     onClick={() => {
+                      // Ouvre la modale de choix et enregistre la marque du fournisseur dans newOrder
                       toggleChoiceModal();
                       setNewOrder((prevOrder) => ({
                         ...prevOrder, 
                         suppliers_id: supplier.id, 
-                        brand_name: supplier.brand?.name || ""
+                        brand_name: supplier.brand?.name || "",
+                        brand_id: supplier.brand_id
                       }));
                     }}
                     className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition"
@@ -260,7 +264,7 @@ export default function Suppliers() {
         />
       </div>
 
-      {/* Modal for adding new supplier */}
+      {/* Modal d'ajout d'un nouveau fournisseur */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center">
           <div className={`w-full max-w-md rounded-lg shadow-lg p-6 relative transition-colors duration-300 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}>
@@ -275,9 +279,7 @@ export default function Suppliers() {
                   type="text"
                   value={newSupplier.name}
                   onChange={(e) => setNewSupplier({ ...newSupplier, name: e.target.value })}
-                  className={`w-full border rounded-lg p-2 focus:outline-none focus:ring transition-colors duration-300 ${
-                    darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'
-                  }`}
+                  className={`w-full border rounded-lg p-2 focus:outline-none focus:ring transition-colors duration-300 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
                   placeholder="Supplier Name"
                 />
               </div>
@@ -290,9 +292,7 @@ export default function Suppliers() {
                   type="email"
                   value={newSupplier.email}
                   onChange={(e) => setNewSupplier({ ...newSupplier, email: e.target.value })}
-                  className={`w-full border rounded-lg p-2 focus:outline-none focus:ring transition-colors duration-300 ${
-                    darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'
-                  }`}
+                  className={`w-full border rounded-lg p-2 focus:outline-none focus:ring transition-colors duration-300 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
                   placeholder="Email"
                 />
               </div>
@@ -305,9 +305,7 @@ export default function Suppliers() {
                   type="text"
                   value={newSupplier.phone_number}
                   onChange={(e) => setNewSupplier({ ...newSupplier, phone_number: e.target.value })}
-                  className={`w-full border rounded-lg p-2 focus:outline-none focus:ring transition-colors duration-300 ${
-                    darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'
-                  }`}
+                  className={`w-full border rounded-lg p-2 focus:outline-none focus:ring transition-colors duration-300 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
                   placeholder="Phone Number"
                 />
               </div>
@@ -320,9 +318,7 @@ export default function Suppliers() {
                   type="text"
                   value={newSupplier.address}
                   onChange={(e) => setNewSupplier({ ...newSupplier, address: e.target.value })}
-                  className={`w-full border rounded-lg p-2 focus:outline-none focus:ring transition-colors duration-300 ${
-                    darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'
-                  }`}
+                  className={`w-full border rounded-lg p-2 focus:outline-none focus:ring transition-colors duration-300 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
                   placeholder="Address"
                 />
               </div>
@@ -335,9 +331,7 @@ export default function Suppliers() {
                   name="brand_id"
                   value={newSupplier.brand_id || ""}
                   onChange={(e) => setNewSupplier({ ...newSupplier, brand_id: e.target.value })}
-                  className={`w-full border rounded-lg p-2 focus:outline-none focus:ring transition-colors duration-300 ${
-                    darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'
-                  }`}
+                  className={`w-full border rounded-lg p-2 focus:outline-none focus:ring transition-colors duration-300 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
                   required
                 >
                   <option value="">Select a Brand</option>
@@ -352,25 +346,13 @@ export default function Suppliers() {
                 <button
                   type="button"
                   onClick={toggleModal}
-                  className={`px-4 py-2 rounded-md border transition-colors duration-300 ${
-                    darkMode
-                      ? 'text-gray-300 border-gray-600 hover:bg-gray-700'
-                      : 'text-gray-600 border-gray-300 hover:bg-gray-100'
-                  }`}
+                  className={`px-4 py-2 rounded-md border transition-colors duration-300 ${darkMode ? 'text-gray-300 border-gray-600 hover:bg-gray-700' : 'text-gray-600 border-gray-300 hover:bg-gray-100'}`}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className={`px-4 py-2 rounded-md transition-colors duration-300 ${
-                    loading
-                      ? darkMode
-                        ? 'bg-gray-600'
-                        : 'bg-gray-400'
-                      : darkMode
-                      ? 'bg-blue-600 hover:bg-blue-700'
-                      : 'bg-blue-600 hover:bg-blue-700'
-                  } text-white`}
+                  className={`px-4 py-2 rounded-md transition-colors duration-300 ${loading ? (darkMode ? 'bg-gray-600' : 'bg-gray-400') : (darkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-600 hover:bg-blue-700')} text-white`}
                   disabled={loading}
                 >
                   {loading ? 'Adding...' : 'Add'}
@@ -386,8 +368,8 @@ export default function Suppliers() {
           </div>
         </div>
       )}
-      
-      {/* Modal for selecting choice (if you have a product or not) */}
+
+      {/* Modal pour le choix s'il y a un produit */}
       {isChoiceModalOpen && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center">
           <div className={`w-full max-w-md rounded-lg shadow-lg p-6 relative transition-colors duration-300 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}>
@@ -422,7 +404,7 @@ export default function Suppliers() {
         </div>
       )}
 
-      {/* Modal for creating order */}
+      {/* Modal pour créer une commande */}
       {isOrderModalOpen && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center">
           <div className={`w-full max-w-md rounded-lg shadow-lg p-6 relative transition-colors duration-300 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}>
@@ -437,9 +419,7 @@ export default function Suppliers() {
                   type="text"
                   value={newOrder.product_name}
                   onChange={(e) => setNewOrder({ ...newOrder, product_name: e.target.value })}
-                  className={`w-full border rounded-lg p-2 transition-colors duration-300 ${
-                    darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'
-                  }`}
+                  className={`w-full border rounded-lg p-2 transition-colors duration-300 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
                   placeholder="Product Name"
                   required
                 />
@@ -453,9 +433,7 @@ export default function Suppliers() {
                   type="number"
                   value={newOrder.price}
                   onChange={(e) => setNewOrder({ ...newOrder, price: e.target.value })}
-                  className={`w-full border rounded-lg p-2 transition-colors duration-300 ${
-                    darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'
-                  }`}
+                  className={`w-full border rounded-lg p-2 transition-colors duration-300 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
                   placeholder="Price"
                   min="0"
                   required
@@ -470,9 +448,7 @@ export default function Suppliers() {
                   type="number"
                   value={newOrder.quantity}
                   onChange={(e) => setNewOrder({ ...newOrder, quantity: e.target.value })}
-                  className={`w-full border rounded-lg p-2 transition-colors duration-300 ${
-                    darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'
-                  }`}
+                  className={`w-full border rounded-lg p-2 transition-colors duration-300 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
                   placeholder="Quantity"
                   min="1"
                   required
@@ -498,7 +474,7 @@ export default function Suppliers() {
         </div>
       )}
 
-      {/* Modal for selecting product, price, and quantity */}
+      {/* Modal pour sélectionner un produit (filtré par marque) */}
       {isProductModalOpen && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center">
           <div className={`w-full max-w-md rounded-lg shadow-lg p-6 relative transition-colors duration-300 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}>
@@ -517,19 +493,20 @@ export default function Suppliers() {
                     setNewOrder({ 
                       ...newOrder, 
                       product_name: selectedProduct.product_name,
-                      product_id: selectedProduct.id 
+                      product_id: selectedProduct.id,
+                      price: selectedProduct.price
                     });
                   }}
-                  className={`w-full border rounded-lg p-2 focus:outline-none focus:ring transition-colors duration-300 ${
-                    darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'
-                  }`}
+                  className={`w-full border rounded-lg p-2 focus:outline-none focus:ring transition-colors duration-300 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
                   required
                 >
                   <option value="">Select a Product</option>
-                  {products.map((product) => (
-                    <option key={product.id} value={product.product_name}>
-                      {product.product_name}
-                    </option>
+                  {products
+                    .filter(product => product.brand_id === newOrder.brand_id)
+                    .map((product) => (
+                      <option key={product.id} value={product.product_name}>
+                        {product.product_name}
+                      </option>
                   ))}
                 </select>
               </div>
@@ -542,9 +519,7 @@ export default function Suppliers() {
                   type="number"
                   value={ProductSelected.price}
                   readOnly
-                  className={`w-full border rounded-lg p-2 transition-colors duration-300 ${
-                    darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'
-                  }`}
+                  className={`w-full border rounded-lg p-2 transition-colors duration-300 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
                   placeholder="Price"
                   min="0"
                   required
@@ -559,9 +534,7 @@ export default function Suppliers() {
                   type="number"
                   value={newOrder.quantity}
                   onChange={(e) => setNewOrder({ ...newOrder, quantity: e.target.value })}
-                  className={`w-full border rounded-lg p-2 transition-colors duration-300 ${
-                    darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'
-                  }`}
+                  className={`w-full border rounded-lg p-2 transition-colors duration-300 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
                   placeholder="Quantity"
                   min="1"
                   required

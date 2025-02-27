@@ -49,15 +49,15 @@ class DashboardController extends Controller
                 $data[$day] = [
                     'day' => $day,
                     'Sold' => 0,
-                    'returned' => 0,
+                    'Returned' => 0,
                     'pending' => 0,
                 ];
             }
     
             if ($sell->status === 'Sold') {
                 $data[$day]['Sold']++;
-            } elseif ($sell->status === 'returned') {
-                $data[$day]['returned']++;
+            } elseif ($sell->status === 'Returned') {
+                $data[$day]['Returned']++;
             } elseif ($sell->status === 'pending') {
                 $data[$day]['pending']++;
             }
