@@ -4,6 +4,7 @@ import { axiosClient } from "../Api/axiosClient";
 import EditCustomerModal from '../Components/EditCustomerModal';
 import { FiPlus, FiEdit, FiTrash2, FiX } from 'react-icons/fi';
 import Spinner from '../Components/Spinner';
+import { Notification } from '../Components/Notification';
 
 export default function Customers() {
   const darkMode = useSelector((state) => state.theme.darkMode);
@@ -14,6 +15,7 @@ export default function Customers() {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [loading, setLoading] = useState(false);
   const [status ,sestatus] = useState('');
+  const [notification, setNotification] = useState(null); 
 
   useEffect(() => {
     fetchCustomers();
@@ -35,11 +37,13 @@ export default function Customers() {
       const response = await axiosClient.post('/customer/store', newCustomer);
       if (response.status === 201) {
         setNewCustomer({ name: '', email: '', phone_number: '', address: '' });
+        setNotification({type:"success",message:"Customer added successfully"});
         fetchCustomers();
         setIsModalOpen(false);
       }
     } catch (error) {
       console.error('Error adding customer:', error);
+      setNotification({type:"error",message:"Error adding customer"});
     } finally {
       setLoading(false);
     }
@@ -51,8 +55,10 @@ export default function Customers() {
     try {
       await axiosClient.delete(`/customer/destroy/${id}`);
       setCustomers(customers.filter((customer) => customer.id !== id));
+      setNotification({type:"success",message:"Customer deleted successfully"});
     } catch (error) {
       console.error('Error deleting customer:', error);
+      setNotification({type:"error",message:"Error deleting customer"});
     } finally {
       setLoading(false);
     }
@@ -69,14 +75,14 @@ export default function Customers() {
     try {
     const response =  await axiosClient.put(`/customer/update/${selectedCustomer.id}`, updatedCustomer);
     if(response.status === 200){
-      sestatus('success');
-    }
-    
-      
+      sestatus('success'); 
+     }
+      setNotification({type:"success",message:"Customer updated successfully"});
       fetchCustomers();
       setIsEditModalOpen(false);
     } catch (error) {
       console.error("Error saving customer:", error);
+      setNotification({type:"error",message:"Error saving customer"});
       sestatus('error');
     } finally {
       setLoading(false);
@@ -292,6 +298,8 @@ export default function Customers() {
           darkMode={darkMode}
           status={status}
         />
+
+        {notification && <Notification type={notification.type} message={notification.message} />}
       </div>
   
   );

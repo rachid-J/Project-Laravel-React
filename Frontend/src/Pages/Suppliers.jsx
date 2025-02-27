@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { axiosClient } from "../Api/axiosClient";
 import EditSupplierModal from '../Components/EditSupplierModal';
+import { Notification } from '../Components/Notification';
 
 export default function Suppliers() {
   const darkMode = useSelector((state) => state.theme.darkMode);
@@ -14,6 +15,7 @@ export default function Suppliers() {
   const [newSupplier, setNewSupplier] = useState({ name: '', email: '', phone_number: '', address: '', brand_id: '' });
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState(null);
+  const [notification,setNotification] = useState(null);
   const [newOrder, setNewOrder] = useState({  
     brand_name: "",
     product_name: "",
@@ -98,10 +100,12 @@ export default function Suppliers() {
       const response = await axiosClient.post('/supplier/store', newSupplier);
       if (response.status === 200) {
         setNewSupplier({ name: '', email: '', phone_number: '', address: '', brand_id: '' });
+        setNotification({type:"success",message:"Supplier added successfully!"});
         fetchSuppliers(); 
         setIsModalOpen(false); 
       } else {
         console.error('Failed to add supplier');
+        setNotification({type:"error",message:"Failed to add supplier"});
       }
     } catch (error) {
       console.error('Error adding supplier:', error);
@@ -122,12 +126,13 @@ export default function Suppliers() {
       const response = await axiosClient.post('/order/store', newOrder);
       console.log('Order created:', response.data);
       if (response.status === 201) {
-        alert('Order created successfully');
         setNewOrder({ brand_name: "", product_id: '', product_name: '', suppliers_id: '', store_id: '', price: '', quantity: 1, brand_id: "" });
+        setNotification({type:"success",message:"Order created successfully!"});
         toggleOrderModal();
         toggleProductModal();
       } else {
         console.error('Failed to create order');
+        setNotification({type:"error",message:"Order creation failed"})
       }
     } catch (error) {
       console.error('Error creating order:', error);
@@ -144,8 +149,10 @@ export default function Suppliers() {
       const response = await axiosClient.delete(`/supplier/destroy/${id}`);
       if (response.status === 200) {
         setSuppliers(suppliers.filter((supplier) => supplier.id !== id));
+        setNotification({type:"success",message:"Supplier deleted successfully!"});
       } else {
         console.error('Failed to delete supplier');
+        setNotification({type:"error",message:"Failed to delete supplier"});
       }
     } catch (error) {
       console.error('Error deleting supplier:', error);
@@ -170,16 +177,16 @@ export default function Suppliers() {
       const response = await axiosClient.put(`/supplier/update/${selectedSupplier.id}`, updatedSupplier);
       console.log('Response:', response);
       if (response.status === 200 && response.data) {
-        alert("Supplier updated successfully");
+        setNotification({type:"success",message:"Supplier updated successfully!"});
         fetchSuppliers();
         setIsEditModalOpen(false);
       } else {
         console.error("Failed to update supplier");
-        alert("Failed to update supplier. Please try again.");
+        setNotification({type:"error",message:"Failed to update supplier"});
       }
     } catch (error) {
       console.error("Error saving supplier:", error);
-      alert("Failed to save supplier. Please try again.");
+      setNotification({type:"error",message:"Error saving supplier"});
     } finally {
       setLoading(false);
     }
@@ -565,6 +572,8 @@ export default function Suppliers() {
           </div>
         </div>
       )}
+              {notification && <Notification type={notification.type} message={notification.message} />}
+      
     </div>
   );
 }

@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
+import { Notification } from "./Notification";
 
 const AddBrandModal = ({ show, handleClose, handleSave }) => {
   const [brandName, setBrandName] = useState("");
+  const [notification,setNotification] = useState(null);
   const darkMode = useSelector((state) => state.theme.darkMode); // Get dark mode state
 
   const handleSubmit = () => {
     if (!brandName.trim()) {
-      alert("Please provide a brand name.");
+      setNotification({type:"error",message:"Please provide a brand name."});
       return;
     }
 
@@ -78,6 +80,7 @@ const AddBrandModal = ({ show, handleClose, handleSave }) => {
           </button>
         </div>
       </div>
+      {notification && <Notification type={notification.type} message={notification.message} />}
     </div>
   );
 };

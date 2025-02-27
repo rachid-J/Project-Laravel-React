@@ -3,6 +3,7 @@ import { toast } from "react-toastify";
 import { axiosClient } from "../Api/axiosClient";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import { Notification } from "../Components/Notification";
 
 export default function Settings() {
   const [formData, setFormData] = useState({
@@ -19,6 +20,8 @@ export default function Settings() {
   const [loading, setLoading] = useState(false);
   const [initialData, setInitialData] = useState(null);
   const darkMode = useSelector((state) => state.theme.darkMode);
+
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     const fetchStore = async () => {
@@ -95,7 +98,7 @@ export default function Settings() {
 
         // Update the UI with the response
         setInitialData(response.data.store);
-        toast.success("Store updated successfully!");
+        setNotification({ type: "success", message: "Store updated successfully" });
         console.log(response)
     } catch (error) {
         console.error("Error updating store:", error?.response?.data?.message || error.message);
@@ -108,7 +111,7 @@ export default function Settings() {
   return (
 
      
-
+    <>
       <form onSubmit={handleSubmit} className={` ${darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"}`}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Avatar Upload */}
@@ -260,5 +263,7 @@ export default function Settings() {
           </button>
         </div>
       </form>
+      {notification && <Notification type={notification.type} message={notification.message} />}
+      </>
   );
 }

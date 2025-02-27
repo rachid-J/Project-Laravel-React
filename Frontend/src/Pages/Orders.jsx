@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { axiosClient } from "../Api/axiosClient";
+import { Notification } from "../Components/Notification";
 
 export default function Orders() {
   const darkMode = useSelector((state) => state.theme.darkMode);
@@ -8,7 +9,7 @@ export default function Orders() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedOrders, setSelectedOrders] = useState([]);
-  
+  const [notification,setNotification] = useState(null);
   const [currentPage, setCurrentPage] = useState(1); // Current page state
   const itemsPerPage = 6; // Number of orders per page
   
@@ -57,7 +58,7 @@ export default function Orders() {
           }
         })
       );
-  
+      setNotification({type:"success", message:"Selected orders paid successfully."});
       setOrders((prevOrders) =>
         prevOrders.map((order) =>
           selectedOrders.includes(order.id)
@@ -69,6 +70,7 @@ export default function Orders() {
       setSelectedOrders([]);
     } catch (error) {
       console.error("Batch payment error:", error);
+      setNotification({type:"error", message:"Failed to pay for selected orders."});
       setError(
         error.response?.data?.message || "Failed to pay for selected orders."
       );
@@ -85,6 +87,7 @@ export default function Orders() {
           axiosClient.post(`/order/cancel/${orderId}`)
         )
       );
+      setNotification({type:"success", message:"Selected orders cancelled successfully."});
       setOrders((prevOrders) =>
         prevOrders.map((order) =>
           selectedOrders.includes(order.id)
@@ -94,6 +97,7 @@ export default function Orders() {
       );
       setSelectedOrders([]);
     } catch (error) {
+      setNotification({type:"error", message:"Failed to cancel selected orders."});
       setError("Failed to cancel selected orders.");
     } finally {
       setLoading(false);
@@ -281,6 +285,7 @@ export default function Orders() {
           Next
         </button>
       </div>
+          {notification && <Notification type={notification.type} message={notification.message} />}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { axiosClient } from "../Api/axiosClient";
+import { Notification } from "./Notification";
 
 const SaleModal = ({ show, handleClose, selectedProducts, fetchOrders }) => {
   const [customers, setCustomers] = useState([]);
@@ -8,6 +9,7 @@ const SaleModal = ({ show, handleClose, selectedProducts, fetchOrders }) => {
   const [saleQuantities, setSaleQuantities] = useState(
     selectedProducts.reduce((acc, product) => ({ ...acc, [product.id]: 1 }), {})
   );
+  const [notification,setNotification] = useState(null);      
 
   const darkMode = useSelector((state) => state.theme.darkMode); // Get dark mode state
 
@@ -31,7 +33,7 @@ const SaleModal = ({ show, handleClose, selectedProducts, fetchOrders }) => {
 
   const handleConfirmSale = async () => {
     if (!selectedCustomer) {
-      alert("Please select a customer.");
+      setNotification({type:"error",message:"Please select a customer."});
       return;
     }
 
@@ -43,7 +45,7 @@ const SaleModal = ({ show, handleClose, selectedProducts, fetchOrders }) => {
           quantity: saleQuantities[product.id],
         })),
       });
-
+      setNotification({type:"success",message:"Sale confirmed successfully!"});
       fetchOrders();
       handleClose();
     } catch (error) {
@@ -129,7 +131,13 @@ const SaleModal = ({ show, handleClose, selectedProducts, fetchOrders }) => {
             Cancel
           </button>
         </div>
+         
       </div>
+  
+      {notification && <Notification type={notification.type} message={notification.message} />}
+     
+     
+    
     </div>
   );
 };

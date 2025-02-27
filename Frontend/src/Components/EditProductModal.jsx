@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux"; // Import useSelector to access dark mode state
+import { Notification } from "./Notification";
 
 const EditProductModal = ({ show, handleClose, handleSave, product }) => {
   const [productName, setProductName] = useState("");
   const [productPrice, setProductPrice] = useState("");
   const [productStock, setProductStock] = useState("");
   const [totalPrice, setTotalPrice] = useState(0);
+  const [notification,setNotification] = useState(null);
 
   const darkMode = useSelector((state) => state.theme.darkMode); // Get dark mode state
 
@@ -34,12 +36,12 @@ const EditProductModal = ({ show, handleClose, handleSave, product }) => {
 
   const handleSubmit = () => {
     if (!productName || !productPrice || !productStock) {
-      alert("Please fill in all required fields.");
+      setNotification({type:"error",message:"Please fill in all required fields."});
       return;
     }
 
     if (isNaN(productPrice) || isNaN(productStock)) {
-      alert("Price and Stock must be valid numbers.");
+      setNotification({type:"error",message:"Price and Stock must be valid numbers."});
       return;
     }
 
@@ -143,6 +145,7 @@ const EditProductModal = ({ show, handleClose, handleSave, product }) => {
           </button>
         </div>
       </div>
+            {notification && <Notification type={notification.type} message={notification.message} />}
     </div>
   );
 };

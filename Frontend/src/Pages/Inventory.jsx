@@ -6,6 +6,7 @@ import ShowMoreBrandModal from "../Components/ShowMoreBrandModal";
 import EditProductModal from "../Components/EditProductModal";
 import { axiosClient } from "../Api/axiosClient";
 import "react-loading-skeleton/dist/skeleton.css";
+import { Notification } from "../Components/Notification";
 
 
 
@@ -26,6 +27,7 @@ const Inventory = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const itemsPerStep = 5;
   const [selectedBrand, setSelectedBrand] = useState('');
+  const [notification, setNotification] = useState(null);
   // Fetch brands and products on mount
   useEffect(() => {
     fetchBrands();
@@ -34,6 +36,15 @@ const Inventory = () => {
   useEffect(() => {
     setCurrentStep(1);
   }, [selectedBrand]);
+
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => {
+        setNotification(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
 
   const fetchBrands = useCallback(async () => {
     try {
@@ -82,12 +93,12 @@ const Inventory = () => {
           price: productData.price,
           quantity: productData.stock,
         });
-        alert("Product updated successfully!");
+        setNotification({type:"success",message:"Product updated successfully!"})
       }
       fetchOrders();
     } catch (error) {
       console.error("Error saving product:", error);
-      alert("Failed to save product. Please try again.");
+      setNotification({type:"error",message:"Failed to save product. Please try again."})
     } finally {
       setLoading(false);
     }
@@ -96,20 +107,22 @@ const Inventory = () => {
   // Save new brand
   const handleSaveBrand = async (newBrand) => {
     setLoading(true);
+    setNotification(null);
     try {
       const token = localStorage.getItem("access_token");
       if (!token) {
         alert("Unauthorized. Please log in again.");
         return;
       }
-      await axiosClient.post("/brand/create", newBrand, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      alert("Brand added successfully!");
+      const response = await axiosClient.post("/brand/create", newBrand);
+      console.log(response)
+      setNotification({type:"success",message:response.data.message})
       fetchBrands();
     } catch (error) {
       console.error("Error saving brand:", error);
-      alert("Failed to add brand. Please try again.");
+      if(error.response){
+      setNotification({type:"error",message:"Failed to save brand. Please try again."})
+      }
     } finally {
       setLoading(false);
       setShowBrandModal(false);
@@ -121,11 +134,11 @@ const Inventory = () => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
       await axiosClient.delete(`/product/delete/${productId}`);
-      alert("Product deleted successfully!");
+      setNotification({type:"success",message:"Product deleted successfully!"})
       fetchOrders();
     } catch (error) {
       console.error("Error deleting product:", error);
-      alert("Failed to delete product. Please try again.");
+      setNotification({type:"error",message:"Product deletion failed. Please try again."})
     }
   };
 
@@ -377,7 +390,9 @@ const Inventory = () => {
         )}
         fetchOrders={fetchOrders}
       />
+      {notification && <Notification type={notification.type} message={notification.message} />}
     </div>
+    
   );
 };
 

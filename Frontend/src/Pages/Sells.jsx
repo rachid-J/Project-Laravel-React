@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux"; 
 import { axiosClient } from "../Api/axiosClient"; 
+import { Notification } from "../Components/Notification";
 
 export default function Sells() {
   const [sells, setSells] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const [notification,setNotification] = useState(null);
 
   const darkMode = useSelector((state) => state.theme.darkMode);
 
@@ -30,12 +31,12 @@ export default function Sells() {
       console.log(`Confirming sell with ID: ${id}`);
       const response = await axiosClient.post(`/product/confirm/${id}`);
       console.log("Response Data:", response.data);
-      alert(response.data.message || "Sale confirmed successfully!");
+      setNotification({type:"success",message:"Sale confirmed successfully!"});
       fetchSells();
     }catch (error) {
       if (error.response) {
         console.error("Error Response:", error.response);
-        alert(`Error: ${error.response.data.message || "Failed to confirm sale"}`);
+        setNotification({type:"error",message:"Failed to confirm sale"});
       } else {
         console.error("Request Failed:", error.message);
         alert("Network or server issue. Check console for details.");
@@ -50,12 +51,12 @@ export default function Sells() {
       console.log(`Returning sell with ID: ${id}`);
       const response = await axiosClient.post(`/product/return/${id}`);
       console.log("Response Data:", response.data);
-      alert(response.data.message || "Sale returned successfully!");
+      setNotification({type:"success",message:"Sale returned successfully!"});
       fetchSells();
     } catch (error) {
       if (error.response) {
         console.error("Error Response:", error.response);
-        alert(`Error: ${error.response.data.message || "Failed to return sale"}`);
+        setNotification({type:"error",message:"Failed to return sale"});
       } else {
         console.error("Request Failed:", error.message);
         alert("Network or server issue. Check console for details.");
@@ -120,6 +121,7 @@ export default function Sells() {
           </table>
         </div>
       </div>
+          {notification && <Notification type={notification.type} message={notification.message} />}
     </div>
   );
 }
